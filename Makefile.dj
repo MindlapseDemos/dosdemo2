@@ -1,0 +1,113 @@
+BUILD ?= release
+
+src = $(wildcard src/*.c) $(wildcard src/3dgfx/*.c) $(wildcard src/rt/*.c) \
+	  $(wildcard src/scr/*.c) $(wildcard src/dos/*.c)
+asmsrc = $(wildcard src/*.asm) $(wildcard src/scr/*.asm) $(wildcard src/dos/*.asm)
+ssrc = $(wildcard src/dos/*.s)
+obj = $(src:.c=.odj) $(asmsrc:.asm=.odj) $(ssrc:.s=.odj)
+dep = $(src:.c=.d)
+bin = djdemo.exe
+
+asmsrc += cspr/dbgfont.asm cspr/confont.asm
+bindata = data/loading.img
+
+ifeq ($(findstring COMMAND.COM, $(SHELL)), COMMAND.COM)
+	hostsys = dos
+else
+	hostsys = unix
+	TOOLPREFIX = i586-pc-msdosdjgpp-
+endif
+
+inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/dos -Ilibs \
+	  -Ilibs/imago/src -Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include
+opt = -O3 -ffast-math -fno-strict-aliasing
+warn = -pedantic -Wall -Wno-unused-function -Wno-unused-variable -Wno-unknown-pragmas
+
+ifeq ($(BUILD), release)
+	def = -DNDEBUG
+else
+	dbg = -g
+endif
+#prof = -pg
+
+CC = $(TOOLPREFIX)gcc
+AR = $(TOOLPREFIX)ar
+CFLAGS = -march=pentium $(warn) -MMD $(dbg) $(opt) $(prof) $(inc) $(def)
+LDFLAGS = libs/imago/imago.dja libs/anim/anim.dja libs/goat3d/goat3d.dja \
+		  libs/assfile/assfile.dja libs/midas/libmidas.a
+
+ifneq ($(hostsys), dos)
+.PHONY: all
+all: data $(bin)
+endif
+
+$(bin): $(obj) imago anim goat3d assfile
+	$(CC) -o $@ -Wl,-Map=ld.map $(prof) $(obj) $(LDFLAGS)
+
+%.odj: %.asm
+	nasm -f coff -o $@ $<
+
+src/data.odj: src/data.asm $(bindata)
+
+-include $(dep)
+
+%.odj: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+%.odj: %.s
+	$(TOOLPREFIX)as -o $@ -c $<
+
+.PHONY: imago
+imago:
+	$(MAKE) -C libs/imago -f Makefile.dj
+
+.PHONY: anim
+anim:
+	$(MAKE) -C libs/anim -f Makefile.dj
+
+.PHONY: goat3d
+goat3d:
+	$(MAKE) -C libs/goat3d -f Makefile.dj
+
+.PHONY: assfile
+assfile:
+	$(MAKE) -C libs/assfile -f Makefile.dj
+
+.PHONY: cleanlibs
+cleanlibs:
+	$(MAKE) -C libs/imago clean -f Makefile.dj
+	$(MAKE) -C libs/anim clean -f Makefile.dj
+	$(MAKE) -C libs/goat3d clean -f Makefile.dj
+	$(MAKE) -C libs/assfile clean -f Makefile.dj
+
+.PHONY: clean
+.PHONY: cleandep
+
+ifeq ($(hostsys), dos)
+clean:
+	del src\*.odj
+	del src\3dgfx\*.odj
+	del src\rt\*.odj
+	del src\dos\*.odj
+	del $(bin)
+
+cleandep:
+	del src\*.d
+	del src\3dgfx\*.d
+	del src\rt\*.d
+	del src\dos\*.d
+else
+clean:
+	rm -f $(obj) $(bin)
+
+cleandep:
+	rm -f $(dep)
+
+.PHONY: data
+data:
+	@tools/procdata
+endif
+
+.PHONY: strip
+strip: $(bin)
+	$(TOOLPREFIX)strip $(bin)

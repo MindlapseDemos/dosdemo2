@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ -f ./procdata ] && cd ..
+if [ ! -f tools/procdata ]; then
+	echo 'run from the demo root directory' >&2
+	exit 1
+fi

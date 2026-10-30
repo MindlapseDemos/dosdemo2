@@ -1,0 +1,71 @@
+name: DOS build (Watcom)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: cache toolchain
+      id: cache-tc
+      uses: actions/cache@v4
+      with:
+        path: ow
+        key: openwatcom-cache1
+
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libpng-dev libjpeg-dev nasm subversion
+
+    - name: install toolchain
+      if: steps.cache-tc.outputs.cache-hit != 'true'
+      run: |
+        wget http://mutantstargoat.com/~nuclear/ow_bundle.tar.gz
+        tar xzvf ow_bundle.tar.gz
+        sed -i 's/HOME/GITHUB_WORKSPACE/g' ow/owsetenv-dos.sh
+
+    - name: prepare datafiles
+      run: |
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        tools/procdata
+        ln data/bin/midas.lib .
+        rm -r data/bin data/src
+    - name: build libs/imago
+      run: |
+        source ow/owsetenv-dos.sh
+        cd libs/imago
+        wmake
+    - name: build libs/anim
+      run: |
+        source ow/owsetenv-dos.sh
+        cd libs/anim
+        wmake
+    - name: build libs/goat3d
+      run: |
+        source ow/owsetenv-dos.sh
+        cd libs/goat3d
+        wmake
+    - name: build demo
+      run: |
+        source ow/owsetenv-dos.sh
+        wmake
+        cp ow/binw/dos4gw.exe .
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: watdemo
+        path: |
+          data/
+          demo.exe
+          dos4gw.exe
+          demo.seq
+
+# vi:ts=2 sts=2 sw=2 expandtab:

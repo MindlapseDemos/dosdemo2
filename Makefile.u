@@ -1,0 +1,73 @@
+include ucfg.mk
+
+obj = src/3dgfx/3dgfx.o src/3dgfx/mesh.o src/3dgfx/meshload.o \
+	  src/3dgfx/polyclip.o src/3dgfx/polyfill.o src/3dgfx/scene.o \
+	  src/cfgopt.o src/console.o src/cpuid.o src/darray.o src/demo.o src/dseq.o \
+	  src/dynarr.o src/gfxutil.o src/image.o src/msurf2.o src/noise.o \
+	  src/rbtree.o src/font.o src/curve.o src/scr/test.o \
+	  src/glut/main.o src/glut/audio.o src/glut/miniglut.o \
+	  src/tinyfps.o src/treestor.o src/ts_text.o src/util.o
+
+bin = demo
+
+inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/utils -Isrc/glut -Ilibs \
+	  -Ilibs/imago/src -Ilibs/anim/src -Ilibs/mikmod/include \
+	  -Ilibs/goat3d/include
+def = -DMIKMOD_STATIC -DNO_ASM -DMINIGLUT_USE_LIBC -DNDEBUG
+opt = $(OPT_sys)
+#dbg = -g
+
+CFLAGS = $(inc) $(CFLAGS_sys) $(CFLAGS_extra) $(opt) $(dbg) $(def)
+LDFLAGS = -Llibs/imago -Llibs/anim -Llibs/mikmod -Llibs/goat3d -Llibs/assfile \
+		  $(LDFLAGS_sys) $(LDFLAGS_extra)
+LIBS = -limago -lanim -lmikmod -lgoat3d -lassfile $(LIBS_sys) -lm
+
+$(bin): $(obj) imago anim mikmod goat3d assfile
+	$(CC) -o $@ $(obj) $(LDFLAGS) $(LIBS)
+
+.c.o:
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+.PHONY: libs
+libs: imago anim mikmod goat3d assfile
+
+.PHONY: imago
+imago:
+	cd libs/imago; $(MAKE) -f Makefile.u
+
+.PHONY: anim
+anim:
+	cd libs/anim; $(MAKE) -f Makefile.u
+
+.PHONY: mikmod
+mikmod:
+	cd libs/mikmod; $(MAKE) -f Makefile.u
+
+.PHONY: goat3d
+goat3d:
+	cd libs/goat3d; $(MAKE) -f Makefile.u
+
+.PHONY: assfile
+assfile:
+	cd libs/assfile; $(MAKE) -f Makefile.u
+
+.PHONY: cleanlibs
+cleanlibs:
+	cd libs/imago; $(MAKE) -f Makefile.u clean
+	cd libs/anim; $(MAKE) -f Makefile.u clean
+	cd libs/mikmod; $(MAKE) -f Makefile.u clean
+	cd libs/goat3d; $(MAKE) -f Makefile.u clean
+	cd libs/assfile; $(MAKE) -f Makefile.u clean
+
+.PHONY: clean
+clean:
+	rm -f $(obj) $(bin)
+
+.PHONY: cleandep
+cleandep:
+	rm -f $(dep)
+
+ucfg.mk: tools/unixconf.sh
+	tools/unixconf.sh
+
+# vi:ft=make:

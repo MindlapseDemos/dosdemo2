@@ -1,0 +1,35 @@
+# demo sequencing and event file
+# ------------------------------
+# Any block except the root "demoseq" defines a demo event with the same name.
+# Demo events can take arbitrary values as a function of time. Either by
+# explicitly listing key values, or with start/end/wait/dur attributes.  Key
+# times defined in nested events are relative to the parent event start time.
+#
+# Attribute semantics:
+#   - start: event interval start time, relative to parent.
+#   - startabs: same as start, but absolute time, not relative to parent.
+#   - wait: interval start time, relative to the last encountered end time.
+#   - dur: event interval duration.
+#   - end: event interval end time, relative to parent.
+#   - endabs: same as end, but absolute time, not relative to parent
+#   - key(<msec>): explicit key/value, time in milliseconds relative to parent
+#   - waitkey(<msec>): same as key, but relative to the last encountered end time
+#   - keyabs(<msec>): same as key, but absolute time, not relative to parent
+#   - ksec(<sec>): explicit key/value, time in seconds relative to parent
+#   - waitksec(<sec>): same as ksec, but relative to the last encountered end time
+#   - ksecabs(<sec>): same as ksec, but absolute time, not relative to parent
+#   - interp: one of <step|linear|cubic|smoothstep>
+#   - extrap: one of <extend|clamp|repeat|pingpong>
+#   - trans_in/trans_out: auto-key in/out transition duration (milliseconds)
+#   - trans: sets both trans_in and trans_out
+#   - delayend <msec>: delay the end some time beyond the end of the last event
+#
+# WARNING!!!!! WARNING!!!!! WARNING!!!!! WARNING!!!!! WARNING!!!!! WARNING!!!!!
+# prev screen transition out + new screen transition in both run during the new
+# screen's timeline. A 1sec screen after a screen with an 1sec trans-out won't
+# show up at all! Take care when re-ordering parts or tweaking transition times.
+
+demoseq {
+}
+
+# vi:ts=4 sts=4 sw=4 ai:

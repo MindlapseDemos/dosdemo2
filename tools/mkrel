@@ -1,0 +1,96 @@
+#!/bin/sh
+
+release=false
+
+bindos=bin/djdemo.exe
+binlnx=bin/demo
+binwin=bin/demo-win32.exe
+binarm=bin/demopi
+binbsd=bin/demobsd
+binsgi=bin/demosgi
+binosx=bin/demo-macosx
+
+if [ ! -f $bindos ]; then
+	echo "DOS build missing (expected: $bindos)"
+	exit 1
+fi
+if [ ! -f $binlnx ]; then
+	echo "GNU/Linux x86 build missing (expected: $binlnx)"
+	exit 1
+fi
+if [ ! -f $binwin ]; then
+	echo "Win32 build missing (expected: $binwin)"
+	exit 1
+fi
+if [ ! -f $binarm ]; then
+	echo "Warning: ARM GNU/Linux build missing (expected: $binarm)"
+	binarm=
+fi
+if [ ! -f $binbsd ]; then
+	echo "Warning: FreeBSD build missing (expected: $binbsd)"
+	binbsd=
+fi
+if [ ! -f $binsgi ]; then
+	echo "Warning: SGI IRIX build missing (expected: $binsgi)"
+	binsgi=
+fi
+if [ ! -f $binosx ]; then
+	echo "Warning: MacOS X build missing (expected: $binosx)"
+	binosx=
+fi
+
+if [ ! -f cwsdpmi.exe ]; then
+	echo "cwsdpmi.exe not found"
+	exit 1
+fi
+
+if $release; then
+	outdir=dosdemo2
+	archive=dosdemo2.zip
+	echo "packaging release archive: $archive ..."
+else
+	outdir=demopre
+	archive=demo-preview.zip
+	echo "packaging preview archive: $archive ..."
+fi
+
+rm -rf $outdir
+mkdir -p $outdir
+cp $bindos $outdir/dosdemo2.exe
+cp $binlnx $outdir/dosdemo2
+strip $outdir/dosdemo2
+cp $binwin $outdir/demowin.exe
+[ -n "$binarm" ] && cp $binarm $outdir/demopi
+[ -n "$binbsd" ] && cp $binbsd $outdir/demobsd
+[ -n "$binsgi" ] && cp $binsgi $outdir/demosgi
+[ -n "$binosx" ] && cp $binosx $outdir/demoosx
+
+chmod 775 $outdir/*
+cp cwsdpmi.exe $outdir/cwsdpmi.exe
+
+mkdir -p $outdir/data $outdir/data/3dzoom $outdir/data/bump $outdir/data/grise
+cp data/* $outdir/data 2>/dev/null
+cp data/3dzoom/* $outdir/data/3dzoom
+cp data/bump/* $outdir/data/bump
+cp data/grise/* $outdir/data/grise
+cp demo.seq $outdir/data/demo.seq
+
+cwd=`pwd`
+cd $outdir/data
+tar cvf ../demo.dat *
+cd $cwd
+rm -rf $outdir/data
+
+cp dosdemo2.nfo $outdir/dosdemo2.nfo
+unix2dos $outdir/dosdemo2.nfo
+
+echo 'debug = false' >$outdir/demo.cfg
+
+if ! $release; then
+	echo 'PREVIEW BUILD, DO NOT DISTRIBUTE' >$outdir/PREVIEW.txt
+fi
+
+git archive -o $outdir/demosrc.zip --prefix=demosrc/ HEAD
+
+rm -f $archive
+zip -rq $archive $outdir
