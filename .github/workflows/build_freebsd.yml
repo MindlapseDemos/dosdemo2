@@ -18,7 +18,7 @@ jobs:
       with:
         run: |
           pkg install -y mesa-libs libglvnd libX11 gmake subversion
-          svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+          svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
           tools/unixconf.sh
           make -f Makefile.u
           ln demo demo-freebsd

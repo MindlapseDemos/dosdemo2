@@ -15,13 +15,12 @@ jobs:
 
     - name: install dependencies
       run: |
-        sudo dpkg --add-architecture i386
         sudo apt-get update
-        sudo apt-get install gcc-multilib libgl-dev:i386 libpng-dev libjpeg-dev libasound2-dev:i386 nasm subversion
+        sudo apt-get install libgl-dev libpng-dev libjpeg-dev libasound2-dev subversion
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         tools/procdata
         rm -r data/bin data/src
 

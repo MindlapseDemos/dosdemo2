@@ -27,7 +27,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
       
     - name: build demo
       working-directory: ${{env.GITHUB_WORKSPACE}}

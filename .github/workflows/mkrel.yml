@@ -20,7 +20,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         tools/procdata
         rm -r data/bin data/src
 
@@ -54,7 +54,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         tools/procdata.bat
       
     - name: build demo
@@ -97,7 +97,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         tools/procdata
         ln data/bin/libmidas.a libs/midas/libmidas.a
         rm -rf data/bin data/src
@@ -130,7 +130,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         tools/procdata
         rm -r data/bin data/src
 
@@ -157,7 +157,7 @@ jobs:
 
     - name: prepare datafiles
       run: |
-        svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
         rm -r data/bin data/src
 
     - name: build demo
@@ -182,7 +182,7 @@ jobs:
         run: sudo apt-get install subversion
 
       - name: prepare datafiles
-        run: svn export svn://mutantstargoat.com/datadirs/dosdemo2 datasrc
+        run: svn export svn://mutantstargoat.com/datadirs/dosdemo2 data
 
       - name: download artifacts
         uses: actions/download-artifact@v4
