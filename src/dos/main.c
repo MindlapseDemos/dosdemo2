@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "cpuid.h"
 #include "pci.h"
 
+static void init_mmx_routines(void);
 static int handle_sball_event(sball_event *ev);
 static void recalc_sball_matrix(float *xform);
 
@@ -66,6 +67,10 @@ int main(int argc, char **argv)
 
 	if(read_cpuid(&cpuid) == 0) {
 		print_cpuid(&cpuid);
+	}
+
+	if(CPU_HAVE_MMX) {
+		init_mmx_routines();
 	}
 
 	/* au_init needs to be called early, before init_timer, and also before
@@ -162,6 +167,21 @@ void demo_abort(void)
 	stop_logger();
 	print_tail(opt.logfile);
 	exit(1);
+}
+
+
+/* initialize pointers to various routines which have MMX versions if they're
+ * not handled elsewhere
+ */
+static void init_mmx_routines(void)
+{
+	fputs("set up MMX routines: ", stdout);
+
+	fputs("memcpy64", stdout);
+	memcpy64 = memcpy64_mmx;		/* util_s.asm */
+
+	putchar('\n');
+	fflush(stdout);
 }
 
 #define TX(ev)	((ev)->motion.motion[0])

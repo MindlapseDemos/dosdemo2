@@ -97,25 +97,4 @@ void mouse_orbit_update(float *theta, float *phi, float *dist);
 
 void draw_mouse_pointer(uint16_t *fb);
 
-/* compiled sprites available */
-typedef void (*cs_font_func)(void *, int, int, int);
-void cs_dbgfont(void *fb, int x, int y, int idx);
-void cs_confont(void *fb, int x, int y, int idx);
-
-/* helper to print text with cs_font */
-void cs_puts_font(cs_font_func csfont, int sz, void *fb, int x, int y, const char *str);
-
-#ifndef NO_ASM
-
-#define cs_dputs(fb, x, y, str)	cs_puts_font(cs_dbgfont, 9, fb, x, y, str)
-#define cs_cputs(fb, x, y, str)	cs_puts_font(cs_confont, 6, fb, x, y, str)
-
-#define cs_mouseptr(fb, x, y) cs_dbgfont(fb, x, y, 127 - ' ')
-
-#else	/* NO_ASM */
-#define cs_dputs(fb, x, y, str)
-#define cs_cputs(fb, x, y, str)
-#define cs_mouseptr(fb, x, y)
-#endif
-
 #endif	/* DEMO_H_ */

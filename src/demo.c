@@ -15,7 +15,6 @@
 #include "tinyfps.h"
 #include "gfxutil.h"
 #include "util.h"
-#include "cpuid.h"
 
 #ifdef __GLIBC__
 #include <malloc.h>
@@ -30,7 +29,6 @@
 
 static void screen_evtrig(dseq_event *ev, enum dseq_trig_mask trig, void *cls);
 static void end_evtrig(dseq_event *ev, enum dseq_trig_mask trig, void *cls);
-static void init_mmx_routines(void);
 
 int fb_width, fb_height, fb_bpp, fb_scan_size;
 float fb_aspect;
@@ -59,8 +57,6 @@ static unsigned long nframes;
 static int con_active;
 static int running, show_dseq_dbg;
 static struct screen *runonlypart;
-
-extern uint16_t loading_pixels[];	/* data.asm */
 
 static struct screen *scr;
 
@@ -93,9 +89,6 @@ int demo_init(void)
 	initFpsFonts();
 
 	init_gfxutil();
-	if(CPU_HAVE_MMX) {
-		init_mmx_routines();
-	}
 
 #ifndef __ANDROID__
 	ass_add_archive("data", "demo.dat");
@@ -282,11 +275,11 @@ void demo_draw(void)
 /* called by swap_buffers just before the actual swap */
 void demo_post_draw(void *pixels)
 {
-	if(showpat && opt.music && au_module_state(0) == AU_PLAYING) {
+	/*if(showpat && opt.music && au_module_state(0) == AU_PLAYING) {
 		char buf[128];
 		sprintf(buf, "modpos: %04d\n", au_player_pos());
 		cs_cputs(pixels, 240, 10, buf);
-	}
+	}*/
 
 	/* no consoles, cursors, fps counters and part names in non-debug mode */
 	if(!opt.dbgmode) {
@@ -297,9 +290,9 @@ void demo_post_draw(void *pixels)
 	}
 
 	drawFps(pixels);
-	if(curscr_name) {
+	/*if(curscr_name) {
 		cs_dputs(pixels, curscr_name_pos, 240 - 16, curscr_name);
-	}
+	}*/
 
 	if(show_dseq_dbg) {
 		dseq_dbg_draw();
@@ -309,21 +302,9 @@ void demo_post_draw(void *pixels)
 		con_draw(pixels);
 	}
 
-	if(opt.mouse && time_msec - last_mouse_move < MOUSE_TIMEOUT) {
+	/*if(opt.mouse && time_msec - last_mouse_move < MOUSE_TIMEOUT) {
 		cs_mouseptr(pixels, mouse_x, mouse_y);
-	}
-}
-
-void cs_puts_font(cs_font_func csfont, int sz, void *fb, int x, int y, const char *str)
-{
-	while(*str) {
-		int c = *str++;
-
-		if(c > ' ' && c < 128) {
-			csfont(fb, x, y, c - ' ');
-		}
-		x += sz;
-	}
+	}*/
 }
 
 void change_screen(int idx)
@@ -542,18 +523,4 @@ static void screen_evtrig(dseq_event *ev, enum dseq_trig_mask trig, void *cls)
 static void end_evtrig(dseq_event *ev, enum dseq_trig_mask trig, void *cls)
 {
 	demo_quit();
-}
-
-/* initialize pointers to various routines which have MMX versions if they're
- * not handled elsewhere
- */
-static void init_mmx_routines(void)
-{
-	fputs("set up MMX routines: ", stdout);
-
-	fputs("memcpy64", stdout);
-	memcpy64 = memcpy64_mmx;		/* util_s.asm */
-
-	putchar('\n');
-	fflush(stdout);
 }

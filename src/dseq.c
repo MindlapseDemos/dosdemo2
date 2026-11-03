@@ -656,6 +656,7 @@ void dseq_set_trigger(dseq_event *ev, enum dseq_trig_mask mask,
 
 void dseq_dbg_draw(void)
 {
+	/*
 	int y = 20;
 	char buf[128];
 	dseq_event *ev;
@@ -674,6 +675,7 @@ void dseq_dbg_draw(void)
 		sprintf(buf, "next: %s in %ld", nextev->name, nextev->relstart);
 		cs_cputs(fb_pixels, 5, y + 5, buf);
 	}
+	*/
 }
 
 

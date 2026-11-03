@@ -50,30 +50,46 @@ void con_stop(void)
 
 void con_draw(uint16_t *fb)
 {
-#ifndef NO_ASM
 	int x, y, sidx, cidx;
 
 	/* print output buffer */
 	y = 1;
 	sidx = sbuf_head;
 	while(sidx != sbuf_tail) {
-		cs_cputs(fb, 1, y, sbuf[sidx]);
+		con_drawstr(fb, 1, y, sbuf[sidx]);
 		sidx = (sidx + 1) & (SBUF_SIZE - 1);
 		y += 8;
 	}
 
 	memset(fb + y++ * 320, 0xff, 640);
 
-	cs_confont(fb, 1, y, '>' - 32);
+	con_drawglyph(fb, 1, y, '>' - 32);
 	cidx = rd;
 	x = 10;
 	while(cidx != wr) {
-		cs_confont(fb, x, y, cbuf[cidx] - 32);
+		con_drawglyph(fb, x, y, cbuf[cidx] - 32);
 		x += 6;
 		cidx = (cidx + 1) & CBUF_MASK;
 	}
 	memset(fb + (y + 8) * 320, 0xff, 640);
-#endif
+}
+
+void con_drawstr(uint16_t *fb, int x, int y, const char *str)
+{
+	int org_x = x;
+	while(*str) {
+		con_drawglyph(fb, x, y, (int)*str++);
+		x += 6;
+		if(x >= 310) {
+			x = org_x;
+			y += 10;
+		}
+	}
+}
+
+void con_drawglyph(uint16_t *fb, int x, int y, int idx)
+{
+	/* TODO */
 }
 
 int con_input(int key)

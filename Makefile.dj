@@ -1,15 +1,12 @@
-BUILD ?= release
+BUILD ?= debug
 
 src = $(wildcard src/*.c) $(wildcard src/3dgfx/*.c) $(wildcard src/rt/*.c) \
 	  $(wildcard src/scr/*.c) $(wildcard src/dos/*.c)
-asmsrc = $(wildcard src/*.asm) $(wildcard src/scr/*.asm) $(wildcard src/dos/*.asm)
+asmsrc = $(wildcard src/dos/*.asm)
 ssrc = $(wildcard src/dos/*.s)
 obj = $(src:.c=.odj) $(asmsrc:.asm=.odj) $(ssrc:.s=.odj)
 dep = $(src:.c=.d)
 bin = djdemo.exe
-
-asmsrc += cspr/dbgfont.asm cspr/confont.asm
-bindata = data/loading.img
 
 ifeq ($(findstring COMMAND.COM, $(SHELL)), COMMAND.COM)
 	hostsys = dos
@@ -46,8 +43,6 @@ $(bin): $(obj) imago anim goat3d assfile
 
 %.odj: %.asm
 	nasm -f coff -o $@ $<
-
-src/data.odj: src/data.asm $(bindata)
 
 -include $(dep)
 

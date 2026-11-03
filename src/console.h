@@ -7,6 +7,8 @@ int con_init(void);
 void con_start(void);
 void con_stop(void);
 void con_draw(uint16_t *fb);
+void con_drawstr(uint16_t *fb, int x, int y, const char *str);
+void con_drawglyph(uint16_t *fb, int x, int y, int idx);
 int con_input(int key);
 
 void con_printf(const char *fmt, ...);

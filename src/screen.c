@@ -15,6 +15,7 @@
 	} while(0)
 
 struct screen *test_screen(void);
+struct screen *raytrace_screen(void);
 
 void start_loadscr(void);
 void end_loadscr(void);
@@ -39,6 +40,7 @@ void populate_screens(void)
 	int idx = 0;
 
 	scr[idx++] = test_screen();
+	scr[idx++] = raytrace_screen();
 
 	num_screens = idx;
 	assert(num_screens <= NUM_SCR);
