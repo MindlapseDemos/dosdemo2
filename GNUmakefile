@@ -21,8 +21,8 @@ endif
 
 CFLAGS = $(arch) $(warn) -MMD $(opt) $(def) -fno-strict-aliasing $(dbg) $(inc)
 LDFLAGS = $(arch) -static-libgcc -Llibs/imago -Llibs/anim -Llibs/mikmod \
-		  -Llibs/goat3d -Llibs/assfile -limago -lanim -lassfile -lmikmod -lgoat3d \
-		  $(sndlib_$(sys)) -lm
+		  -Llibs/goat3d -Llibs/assfile -Llibs/mad -limago -lanim -lassfile \
+		  -lmikmod -lgoat3d -lmad $(sndlib_$(sys)) -lm
 
 sys ?= $(shell uname -s | sed 's/MINGW.*/mingw/; s/IRIX.*/IRIX/')
 cpu ?= $(shell uname -m | sed 's/i.86/i386/;s/arm.*/arm/')
@@ -50,8 +50,8 @@ else
 	ifeq ($(sys), Darwin)
 		arch =
 		LDFLAGS = -Llibs/imago -Llibs/anim -Llibs/mikmod -Llibs/goat3d -Llibs/assfile \
-				  -limago -lanim -lmikmod -lgoat3d -lassfile $(sndlib_$(sys)) \
-				  -lm -framework OpenGL -framework GLUT
+				  -Llibs/mad -limago -lanim -lmikmod -lgoat3d -lassfile -lmad \
+				  $(sndlib_$(sys)) -lm -framework OpenGL -framework GLUT
 	else
 		LDFLAGS += -lGL -lX11 -lpthread
 	endif
@@ -68,7 +68,7 @@ nodata: $(bin)
 .PHONY: all
 all: data $(bin)
 
-$(bin): $(obj) imago anim mikmod goat3d assfile
+$(bin): $(obj) imago anim mikmod goat3d assfile mad
 	$(CC) -o $@ $(obj) $(LDFLAGS)
 
 -include $(dep)
@@ -102,6 +102,10 @@ goat3d:
 assfile:
 	$(MAKE) -C libs/assfile
 
+.PHONY: mad
+mad:
+	$(MAKE) -C libs/mad
+
 .PHONY: cleanlibs
 cleanlibs:
 	$(MAKE) -C libs/imago clean
@@ -109,6 +113,7 @@ cleanlibs:
 	$(MAKE) -C libs/mikmod clean
 	$(MAKE) -C libs/goat3d clean
 	$(MAKE) -C libs/assfile clean
+	$(MAKE) -C libs/mad clean
 
 .PHONY: clean
 clean:

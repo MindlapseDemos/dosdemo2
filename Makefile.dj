@@ -15,8 +15,8 @@ else
 	TOOLPREFIX = i586-pc-msdosdjgpp-
 endif
 
-inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/dos -Ilibs \
-	  -Ilibs/imago/src -Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include
+inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/dos -Ilibs -Ilibs/imago/src \
+	  -Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include -Ilibs/mad
 opt = -O3 -ffast-math -fno-strict-aliasing
 warn = -pedantic -Wall -Wno-unused-function -Wno-unused-variable -Wno-unknown-pragmas
 
@@ -38,7 +38,7 @@ ifneq ($(hostsys), dos)
 all: data $(bin)
 endif
 
-$(bin): $(obj) imago anim goat3d assfile
+$(bin): $(obj) imago anim goat3d assfile mad
 	$(CC) -o $@ -Wl,-Map=ld.map $(prof) $(obj) $(LDFLAGS)
 
 %.odj: %.asm
@@ -68,12 +68,17 @@ goat3d:
 assfile:
 	$(MAKE) -C libs/assfile -f Makefile.dj
 
+.PHONY: mad
+mad:
+	$(MAKE) -C libs/mad -f Makefile.dj
+
 .PHONY: cleanlibs
 cleanlibs:
 	$(MAKE) -C libs/imago clean -f Makefile.dj
 	$(MAKE) -C libs/anim clean -f Makefile.dj
 	$(MAKE) -C libs/goat3d clean -f Makefile.dj
 	$(MAKE) -C libs/assfile clean -f Makefile.dj
+	$(MAKE) -C libs/mad clean -f Makefile.dj
 
 .PHONY: clean
 .PHONY: cleandep
@@ -106,3 +111,5 @@ endif
 .PHONY: strip
 strip: $(bin)
 	$(TOOLPREFIX)strip $(bin)
+
+# vi:ft=make:

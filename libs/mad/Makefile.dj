@@ -1,0 +1,38 @@
+-include ../../config.mk
+
+src = $(wildcard *.c)
+obj = $(src:.c=.odj)
+alib = libmad.dja
+
+ifeq ($(findstring COMMAND.COM, $(SHELL)), COMMAND.COM)
+	hostsys = dos
+else
+	hostsys = unix
+	TCPREFIX = i586-pc-msdosdjgpp-
+endif
+
+ifeq ($(USE_MMX), false)
+	arch = -march=pentium
+else
+	arch = -march=pentium-mmx
+endif
+
+CC = $(TCPREFIX)gcc
+AR = $(TCPREFIX)ar
+CFLAGS = $(arch) -O3 -DHAVE_CONFIG_H -DFPM_INTEL
+
+$(alib): $(obj)
+	$(AR) rcs $@ $(obj)
+
+%.odj: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+.PHONY: clean
+ifeq ($(hostsys), dos)
+clean:
+	del \*.odj
+	del $(alib)
+else
+clean:
+	rm -f $(obj) $(alib)
+endif

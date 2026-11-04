@@ -14,9 +14,9 @@ srcobj = src/cfgopt.obj src/console.obj src/demo.obj src/dynarr.obj &
 scrobj = src/scr/test.obj src/scr/raytrace.obj
 
 incpath = -Isrc -Isrc/dos -Isrc/3dgfx -Isrc/rt -Ilibs -Ilibs/imago/src &
-	-Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include
+	-Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include -Ilibs/mad
 libpath = libpath libs/imago libpath libs/anim libpath libs/midas &
-	libpath libs/goat3d libpath libs/assfile
+	libpath libs/goat3d libpath libs/assfile libpath libs/mad
 !else
 
 dosobj = src\dos\audos.obj src\dos\djdpmi.obj src\dos\gfx.obj src\dos\keyb.obj &
@@ -34,9 +34,9 @@ srcobj = src\cfgopt.obj src\console.obj src\demo.obj src\dynarr.obj &
 scrobj = src\scr\test.obj src\scr\raytrace.obj
 
 incpath = -Isrc -Isrc\dos -Isrc\3dgfx -Isrc\rt -Ilibs -Ilibs\imago\src &
-	-Ilibs\anim\src -Ilibs\midas -Ilibs\goat3d\include
+	-Ilibs\anim\src -Ilibs\midas -Ilibs\goat3d\include -Ilibs\mad
 libpath = libpath libs\imago libpath libs\anim libpath libs\midas &
-	libpath libs\goat3d libpath libs\assfile
+	libpath libs\goat3d libpath libs\assfile libpath libs\mad
 !endif
 
 obj = $(dosobj) $(3dobj) $(rtobj) $(scrobj) $(srcobj) $(csprobj)
@@ -45,7 +45,7 @@ bin = demo.exe
 !include watcfg.mk
 
 def = -dM_PI=3.141592653589793 -dUSE_HLT $(cfg_def)
-libs = imago.lib anim.lib goat3d.lib assfile.lib midas.lib
+libs = imago.lib anim.lib goat3d.lib assfile.lib midas.lib mad.lib
 
 AS = nasm
 CC = wcc386
@@ -61,7 +61,7 @@ $(bin): cflags.occ $(obj) $(libs)
 
 .c: src;src/dos;src/3dgfx;src/rt;src/scr
 .asm: src;src/dos;src/3dgfx;src/rt;src/scr
-.lib: libs/imago;libs/anim;libs/midas;libs/goat3d;libs/assfile
+.lib: libs/imago;libs/anim;libs/midas;libs/goat3d;libs/assfile;libs/mad
 
 cflags.occ: Makefile
 	%write $@ $(CFLAGS)
@@ -105,6 +105,11 @@ assfile.lib:
 	wmake
 	cd ../..
 
+mad.lib:
+	cd libs/mad
+	wmake
+	cd ../..
+
 cleanlibs: .symbolic
 	cd libs/imago
 	wmake clean
@@ -113,6 +118,8 @@ cleanlibs: .symbolic
 	cd ../goat3d
 	wmake clean
 	cd ../assfile
+	wmake clean
+	cd ../mad
 	wmake clean
 !else
 clean: .symbolic
@@ -145,6 +152,11 @@ assfile.lib:
 	wmake
 	cd ..\..
 
+mad.lib:
+	cd libs\mad
+	wmake
+	cd ..\..
+
 cleanlibs: .symbolic
 	cd libs\imago
 	wmake clean
@@ -153,5 +165,7 @@ cleanlibs: .symbolic
 	cd ..\goat3d
 	wmake clean
 	cd ..\assfile
+	wmake clean
+	cd ..\mad
 	wmake clean
 !endif
