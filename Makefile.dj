@@ -31,7 +31,7 @@ CC = $(TOOLPREFIX)gcc
 AR = $(TOOLPREFIX)ar
 CFLAGS = -march=pentium $(warn) -MMD $(dbg) $(opt) $(prof) $(inc) $(def)
 LDFLAGS = libs/imago/imago.dja libs/anim/anim.dja libs/goat3d/goat3d.dja \
-		  libs/assfile/assfile.dja libs/midas/libmidas.a
+		  libs/assfile/assfile.dja libs/midas/libmidas.a libs/mad/libmad.dja
 
 ifneq ($(hostsys), dos)
 .PHONY: all

@@ -69,6 +69,11 @@ static struct au_stream *curstr;
 
 static int vol_master, vol_mus, vol_sfx;
 
+
+static INLINE int scale_sample(mad_fixed_t sample);
+static int decode_frame(struct au_stream *au);
+
+
 int au_init(void)
 {
 	modplay = 0;
@@ -395,6 +400,7 @@ int au_stop_stream(void)
 	curstr->state = AU_STOPPED;
 	MIDASstopStream(curstr->midas);
 	curstr = 0;
+	return 0;
 }
 
 int au_stream_state(void)
