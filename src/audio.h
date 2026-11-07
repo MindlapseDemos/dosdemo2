@@ -14,6 +14,8 @@ struct au_module {
 	void *impl;
 };
 
+struct au_stream;
+
 int au_init(void);
 void au_shutdown(void);
 
@@ -24,8 +26,16 @@ int au_play_module(struct au_module *mod);
 void au_update(void);
 int au_stop_module(struct au_module *mod);
 int au_module_state(struct au_module *mod);
-
 int au_player_pos(void);
+
+struct au_stream *au_open_stream(const char *fname);
+void au_close_stream(struct au_stream *au);
+
+int au_play_stream(struct au_stream *au);
+void au_update_stream(void);
+int au_stop_stream(void);
+int au_stream_state(void);
+long au_stream_pos(void);
 
 int au_volume(int vol);
 int au_sfx_volume(int vol);

@@ -44,7 +44,8 @@ unsigned int mouse_bmask;
 
 struct font demofont;
 
-static struct au_module *mod;
+/*static struct au_module *mod;*/
+static struct au_stream *mus;
 
 float sball_matrix[] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 float sball_view_matrix[] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
@@ -100,7 +101,10 @@ int demo_init(void)
 	g3d_framebuffer(FB_WIDTH, FB_HEIGHT, fb_pixels, FB_WIDTH);
 
 	if(opt.music) {
-		if(!(mod = au_load_module("data/music.xm"))) {
+		/*if(!(mod = au_load_module("data/music.xm"))) {
+			return -1;
+		}*/
+		if(!(mus = au_open_stream("data/music.mp3"))) {
 			return -1;
 		}
 	}
@@ -168,7 +172,8 @@ int demo_init(void)
 	}
 
 	if(opt.music) {
-		au_play_module(mod);
+		/*au_play_module(mod);*/
+		au_play_stream(mus);
 	}
 	return 0;
 }
@@ -185,7 +190,8 @@ void demo_cleanup(void)
 	destroy_font(&demofont);
 
 	if(opt.music) {
-		au_free_module(mod);
+		/*au_free_module(mod);*/
+		au_close_stream(mus);
 	}
 	scr_shutdown();
 	g3d_destroy();
