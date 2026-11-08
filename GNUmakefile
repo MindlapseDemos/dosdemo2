@@ -7,9 +7,9 @@ dep = $(obj:.o=.d)
 bin = demo
 
 inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/utils \
-	  -Isrc/glut -Ilibs -Ilibs/imago/src -Ilibs/anim/src -Ilibs/mikmod/include \
+	  -Isrc/glut -Ilibs -Ilibs/imago/src -Ilibs/anim/src -Ilibs/miniaud \
 	  -Ilibs/goat3d/include -I/usr/local/include
-def = -DMINIGLUT_USE_LIBC -DMIKMOD_STATIC -DNO_ASM
+def = -DMINIGLUT_USE_LIBC -DNO_ASM
 warn = -pedantic -Wall -Wno-unused-variable -Wno-unused-function -Wno-address
 
 ifeq ($(BUILD), release)
@@ -20,9 +20,9 @@ else
 endif
 
 CFLAGS = $(arch) $(warn) -MMD $(opt) $(def) -fno-strict-aliasing $(dbg) $(inc)
-LDFLAGS = $(arch) -static-libgcc -Llibs/imago -Llibs/anim -Llibs/mikmod \
+LDFLAGS = $(arch) -static-libgcc -Llibs/imago -Llibs/anim -Llibs/miniaud \
 		  -Llibs/goat3d -Llibs/assfile -Llibs/mad -limago -lanim -lassfile \
-		  -lmikmod -lgoat3d -lmad $(sndlib_$(sys)) -lm
+		  -lminiaudio -lgoat3d -lmad $(sndlib_$(sys)) -lm
 
 sys ?= $(shell uname -s | sed 's/MINGW.*/mingw/; s/IRIX.*/IRIX/')
 cpu ?= $(shell uname -m | sed 's/i.86/i386/;s/arm.*/arm/')
@@ -49,8 +49,8 @@ ifeq ($(sys), mingw)
 else
 	ifeq ($(sys), Darwin)
 		arch =
-		LDFLAGS = -Llibs/imago -Llibs/anim -Llibs/mikmod -Llibs/goat3d -Llibs/assfile \
-				  -Llibs/mad -limago -lanim -lmikmod -lgoat3d -lassfile -lmad \
+		LDFLAGS = -Llibs/imago -Llibs/anim -Llibs/miniaud -Llibs/goat3d -Llibs/assfile \
+				  -Llibs/mad -limago -lanim -lminiaud -lgoat3d -lassfile -lmad \
 				  $(sndlib_$(sys)) -lm -framework OpenGL -framework GLUT
 	else
 		LDFLAGS += -lGL -lX11 -lpthread
@@ -68,7 +68,7 @@ nodata: $(bin)
 .PHONY: all
 all: data $(bin)
 
-$(bin): $(obj) imago anim mikmod goat3d assfile mad
+$(bin): $(obj) imago anim miniaud goat3d assfile mad
 	$(CC) -o $@ $(obj) $(LDFLAGS)
 
 -include $(dep)
@@ -80,7 +80,7 @@ $(bin): $(obj) imago anim mikmod goat3d assfile mad
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 .PHONY: libs
-libs: imago anim mikmod goat3d assfile
+libs: imago anim miniaud goat3d assfile
 
 .PHONY: imago
 imago:
@@ -90,9 +90,9 @@ imago:
 anim:
 	$(MAKE) -C libs/anim
 
-.PHONY: mikmod
-mikmod:
-	$(MAKE) -C libs/mikmod
+.PHONY: miniaud
+miniaud:
+	$(MAKE) -C libs/miniaud
 
 .PHONY: goat3d
 goat3d:
@@ -110,7 +110,7 @@ mad:
 cleanlibs:
 	$(MAKE) -C libs/imago clean
 	$(MAKE) -C libs/anim clean
-	$(MAKE) -C libs/mikmod clean
+	$(MAKE) -C libs/miniaud clean
 	$(MAKE) -C libs/goat3d clean
 	$(MAKE) -C libs/assfile clean
 	$(MAKE) -C libs/mad clean

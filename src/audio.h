@@ -41,7 +41,6 @@ int au_volume(int vol);
 int au_sfx_volume(int vol);
 int au_music_volume(int vol);
 
-/* pay no attention to the man behind the curtain */
 #define AU_VOLADJ(vol, newvol) \
 	do { \
 		int d; \

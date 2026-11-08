@@ -10,7 +10,8 @@ rtobj = src/rt/rt.obj src/rt/rtgeom.obj
 srcobj = src/cfgopt.obj src/console.obj src/demo.obj src/dynarr.obj &
 	src/gfxutil.obj src/msurf2.obj src/noise.obj src/rbtree.obj src/screen.obj &
 	src/tinyfps.obj src/treestor.obj src/image.obj src/ts_text.obj &
-	src/util.obj src/darray.obj src/dseq.obj src/font.obj src/curve.obj
+	src/util.obj src/darray.obj src/dseq.obj src/font.obj src/curve.obj &
+	src/au_mp3.obj
 scrobj = src/scr/test.obj src/scr/raytrace.obj
 
 incpath = -Isrc -Isrc/dos -Isrc/3dgfx -Isrc/rt -Ilibs -Ilibs/imago/src &
@@ -30,7 +31,8 @@ rtobj = src\rt\rt.obj src\rt\rtgeom.obj
 srcobj = src\cfgopt.obj src\console.obj src\demo.obj src\dynarr.obj &
 	src\gfxutil.obj src\msurf2.obj src\noise.obj src\rbtree.obj src\screen.obj &
 	src\tinyfps.obj src\treestor.obj src\image.obj src\ts_text.obj &
-	src\util.obj src\darray.obj src\dseq.obj src\font.obj src\curve.obj
+	src\util.obj src\darray.obj src\dseq.obj src\font.obj src\curve.obj &
+	src\au_mp3.obj
 scrobj = src\scr\test.obj src\scr\raytrace.obj
 
 incpath = -Isrc -Isrc\dos -Isrc\3dgfx -Isrc\rt -Ilibs -Ilibs\imago\src &
