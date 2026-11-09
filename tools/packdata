@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd data
+tar czvf ../demo.dat --exclude=src --exclude=.svn --exclude=bin *

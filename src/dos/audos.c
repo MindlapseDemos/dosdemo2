@@ -70,6 +70,7 @@ int au_init(void)
 
 	MIDASinit();
 
+	MIDASopenChannels(1);
 	MIDASstartBackgroundPlay(0);
 	return 0;
 }
@@ -144,6 +145,8 @@ struct au_module *au_load_module(const char *fname)
 		return 0;
 	}
 
+	MIDAScloseChannels();
+
 	if(!(mod->impl = MIDASloadModule(unpacked ? "music.tmp" : (char*)fname))) {
 		fprintf(stderr, "au_load_module: failed to load module: %s\n", fname);
 		free(mod);
@@ -212,6 +215,9 @@ int au_play_module(struct au_module *mod)
 
 void au_update(void)
 {
+	if(curstr) {
+		au_update_stream();
+	}
 }
 
 int au_stop_module(struct au_module *mod)
@@ -274,8 +280,10 @@ int au_play_stream(struct au_stream *au)
 		curstr = 0;
 	}
 
-	if(!(au->aout = MIDASplayStreamPolling(MIDAS_SAMPLE_16BIT_STEREO, au->rate, 100))) {
-		fprintf(stderr, "failed to start streaming audio playback\n");
+	printf("starting streaming audio %u hz, 16bit, stereo\n", au->rate);
+	if(!(au->aout = MIDASplayStreamPolling(MIDAS_SAMPLE_16BIT_STEREO, au->rate, 200))) {
+		fprintf(stderr, "failed to start streaming audio playback: %s\n",
+				MIDASgetErrorMessage(MIDASgetLastError()));
 		return -1;
 	}
 	au->state = AU_PLAYING;
