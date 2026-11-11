@@ -180,13 +180,6 @@ int demo_init(void)
 
 void demo_cleanup(void)
 {
-#ifdef __GLIBC__
-	if(opt.dbgmode) {
-		printf("malloc statistics:\n");
-		malloc_stats();
-	}
-#endif
-
 	destroy_font(&demofont);
 
 	if(opt.music) {

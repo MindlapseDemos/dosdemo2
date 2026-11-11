@@ -347,8 +347,10 @@ int au_stream_state(void)
 
 long au_stream_pos(void)
 {
-	struct au_stream *au;
+	struct au_stream *au = curstr;
 	unsigned int nbuf;
+
+	if(!curstr) return 0;
 
 	nbuf = MIDASgetStreamBytesBuffered(au->aout);
 	return au->playpos_bytes - nbuf;
