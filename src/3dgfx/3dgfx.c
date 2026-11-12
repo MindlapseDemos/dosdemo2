@@ -28,13 +28,10 @@ typedef float g3d_matrix[16];
 
 #define NORMALIZE(v) \
 	do { \
-		float len = sqrt((v)[0] * (v)[0] + (v)[1] * (v)[1] + (v)[2] * (v)[2]); \
-		if(len != 0.0) { \
-			float s = 1.0 / len; \
-			(v)[0] *= s; \
-			(v)[1] *= s; \
-			(v)[2] *= s; \
-		} \
+		float s = fast_rsqrt((v)[0] * (v)[0] + (v)[1] * (v)[1] + (v)[2] * (v)[2]); \
+		(v)[0] *= s; \
+		(v)[1] *= s; \
+		(v)[2] *= s; \
 	} while(0)
 
 enum {LT_POS, LT_DIR};
@@ -42,6 +39,7 @@ struct light {
 	int type;
 	float x, y, z;
 	float r, g, b;
+	float atten;
 };
 
 struct material {
@@ -514,6 +512,11 @@ void g3d_light_color(int idx, float r, float g, float b)
 	st->lt[idx].b = b;
 }
 
+void g3d_light_atten(int idx, float a)
+{
+	st->lt[idx].atten = a;
+}
+
 void g3d_light_ambient(float r, float g, float b)
 {
 	st->ambient[0] = r;
@@ -973,7 +976,7 @@ void g3d_viewspace_vertex(struct g3d_vertex *v)
 void g3d_shade(struct g3d_vertex *v)
 {
 	int i, r, g, b;
-	float color[3], kd[3];
+	float color[3], kd[3], atten_invsq;
 
 	if(st->opt & G3D_COLOR_MATERIAL) {
 		kd[0] = (float)v->r / 255.0f;
@@ -991,7 +994,7 @@ void g3d_shade(struct g3d_vertex *v)
 
 	for(i=0; i<MAX_LIGHTS; i++) {
 		float ldir[3];
-		float ndotl;
+		float s, lensq, ndotl;
 
 		if(!(st->opt & (G3D_LIGHT0 << i))) {
 			continue;
@@ -1001,15 +1004,27 @@ void g3d_shade(struct g3d_vertex *v)
 		ldir[1] = st->lt[i].y;
 		ldir[2] = st->lt[i].z;
 
+		atten_invsq = 1.0f;
+
 		if(st->lt[i].type != LT_DIR) {
 			ldir[0] -= v->x;
 			ldir[1] -= v->y;
 			ldir[2] -= v->z;
-			NORMALIZE(ldir);
+			lensq = ldir[0] * ldir[0] + ldir[1] * ldir[1] + ldir[2] * ldir[2];
+			s = fast_rsqrt(lensq);
+			ldir[0] *= s;
+			ldir[1] *= s;
+			ldir[2] *= s;
+
+			if(st->lt[i].atten) {
+				atten_invsq = 1.0f / (lensq * st->lt[i].atten);
+			}
 		}
 
 		if((ndotl = v->nx * ldir[0] + v->ny * ldir[1] + v->nz * ldir[2]) < 0.0f) {
 			ndotl = 0.0f;
+		} else if(atten_invsq != 1.0f) {
+			ndotl *= atten_invsq;
 		}
 
 		color[0] += kd[0] * st->lt[i].r * ndotl;

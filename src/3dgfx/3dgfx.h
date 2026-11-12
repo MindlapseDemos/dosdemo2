@@ -142,6 +142,7 @@ const float *g3d_get_matrix(int which, float *m);
 void g3d_light_pos(int idx, float x, float y, float z);
 void g3d_light_dir(int idx, float x, float y, float z);
 void g3d_light_color(int idx, float r, float g, float b);
+void g3d_light_atten(int idx, float a);
 
 void g3d_light_ambient(float r, float g, float b);
 

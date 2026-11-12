@@ -52,9 +52,9 @@ void scn_destroy(struct g3d_scene *scn);
 struct g3d_scene *scn_create(void);
 void scn_free(struct g3d_scene *scn);
 
-struct g3d_scene *scn_load(const char *fname);
-
 void scn_clear(struct g3d_scene *scn);
+
+struct g3d_scene *scn_load(const char *fname);
 
 void scn_init_node(struct g3d_node *node);
 void scn_destroy_node(struct g3d_node *node);

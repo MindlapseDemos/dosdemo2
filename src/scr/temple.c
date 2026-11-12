@@ -61,6 +61,8 @@ static void destroy(void)
 
 static void start(long trans_time)
 {
+	int i;
+
 	g3d_matrix_mode(G3D_PROJECTION);
 	g3d_load_identity();
 	g3d_perspective(50, 1.333333, 0.5f, 100.0f);
@@ -75,9 +77,13 @@ static void start(long trans_time)
 
 	g3d_polygon_mode(G3D_GOURAUD);
 
-	g3d_light_color(0, 0.4, 0.2, 0.2);
-	g3d_light_color(1, 0.2, 0.2, 0.4);
-	g3d_light_color(2, 0.2, 0.4, 0.2);
+	g3d_light_color(0, 1, 0.3, 0.3);
+	g3d_light_color(1, 0.3, 0.3, 1);
+	g3d_light_color(2, 0.3, 1, 0.3);
+
+	for(i=0; i<3; i++) {
+		g3d_light_atten(i, 0.35);
+	}
 
 	g3d_clear_color(10, 10, 10);
 }
@@ -112,7 +118,7 @@ static void draw(void)
 
 	for(i=0; i<3; i++) {
 		t = tsec + (float)i * (CGM_PI * 2.0f / 3.0f);
-		cgm_vcons(ltpos + i, cos(t) * 5.0f, 2, sin(t) * 5.0f);
+		cgm_vcons(ltpos + i, cos(t) * 3.0f, 1.5, sin(t) * 3.0f);
 
 		g3d_light_pos(i, ltpos[i].x, ltpos[i].y, ltpos[i].z);
 	}
