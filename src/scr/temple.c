@@ -50,7 +50,7 @@ static int temple_init(void)
 		return -1;
 	}
 
-	if(gen_sphere_mesh(&sph, 1.0, 24, 12) == -1) {
+	if(gen_geosphere_mesh(&sph, 1.0, 2, 0) == -1) {
 		fprintf(stderr, "temple_init: mesh generation failed\n");
 		return -1;
 	}

@@ -74,6 +74,7 @@ void calc_mesh_centroid(struct g3d_mesh *mesh, float *cent);
 void calc_mesh_normals(struct g3d_mesh *mesh);
 
 int gen_sphere_mesh(struct g3d_mesh *mesh, float rad, int usub, int vsub);
+int gen_geosphere_mesh(struct g3d_mesh *mesh, float rad, int subdiv, int hemi);
 int gen_plane_mesh(struct g3d_mesh *mesh, float width, float height, int usub, int vsub);
 int gen_cube_mesh(struct g3d_mesh *mesh, float sz, int sub);
 int gen_torus_mesh(struct g3d_mesh *mesh, float rad, float ringrad, int usub, int vsub);

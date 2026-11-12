@@ -279,7 +279,7 @@ int indexify_mesh(struct g3d_mesh *mesh)
 	}
 
 	nfaces = mesh->vcount / mesh->prim;
-	max_icount = mesh->vcount;
+	max_icount = nfaces * mesh->prim;
 
 	if(!(mesh->iarr = malloc(max_icount * sizeof *mesh->iarr))) {
 		fprintf(stderr, "indexify_mesh failed to allocate index buffer of %d indices\n", max_icount);
@@ -296,13 +296,16 @@ int indexify_mesh(struct g3d_mesh *mesh)
 			} else {
 				*iout++ = out_vcount++;
 				if(vin != vout) {
-					*vout++ = *vin;
+					*vout = *vin;
 				}
+				++vout;
 			}
 			++vin;
 		}
 	}
 
+	mesh->vcount = out_vcount;
+	mesh->icount = max_icount;
 	/* XXX also shrink buffers? I'll just leave them to max size for now */
 	return 0;
 }
@@ -520,6 +523,128 @@ int gen_sphere_mesh(struct g3d_mesh *mesh, float rad, int usub, int vsub)
 			}
 		}
 	}
+	return 0;
+}
+
+#define PHI		1.618034
+static cgm_vec3 icosa_pt[] = {
+	{PHI, 1, 0},
+	{-PHI, 1, 0},
+	{PHI, -1, 0},
+	{-PHI, -1, 0},
+	{1, 0, PHI},
+	{1, 0, -PHI},
+	{-1, 0, PHI},
+	{-1, 0, -PHI},
+	{0, PHI, 1},
+	{0, -PHI, 1},
+	{0, PHI, -1},
+	{0, -PHI, -1}
+};
+enum { P11, P12, P13, P14, P21, P22, P23, P24, P31, P32, P33, P34 };
+static int icosa_idx[] = {
+	P11, P31, P21,
+	P11, P22, P33,
+	P13, P21, P32,
+	P13, P34, P22,
+	P12, P23, P31,
+	P12, P33, P24,
+	P14, P32, P23,
+	P14, P24, P34,
+
+	P11, P33, P31,
+	P12, P31, P33,
+	P13, P32, P34,
+	P14, P34, P32,
+
+	P21, P13, P11,
+	P22, P11, P13,
+	P23, P12, P14,
+	P24, P14, P12,
+
+	P31, P23, P21,
+	P32, P21, P23,
+	P33, P22, P24,
+	P34, P24, P22
+};
+
+static cgm_vec3 *geosphere(cgm_vec3 *verts, cgm_vec3 *v1, cgm_vec3 *v2, cgm_vec3 *v3, int iter)
+{
+	cgm_vec3 v12, v23, v31;
+
+	if(!iter) {
+		dynarr_push_nf(verts, v1);
+		dynarr_push_nf(verts, v2);
+		dynarr_push_nf(verts, v3);
+		return verts;
+	}
+
+	v12 = *v1;
+	cgm_vadd(&v12, v2);
+	cgm_vnormalize(&v12);
+	v23 = *v2;
+	cgm_vadd(&v23, v3);
+	cgm_vnormalize(&v23);
+	v31 = *v3;
+	cgm_vadd(&v31, v1);
+	cgm_vnormalize(&v31);
+
+	verts = geosphere(verts, v1, &v12, &v31, iter - 1);
+	verts = geosphere(verts, v2, &v23, &v12, iter - 1);
+	verts = geosphere(verts, v3, &v31, &v23, iter - 1);
+	verts = geosphere(verts, &v12, &v23, &v31, iter - 1);
+	return verts;
+}
+
+int gen_geosphere_mesh(struct g3d_mesh *mesh, float rad, int subdiv, int hemi)
+{
+	int i, j, num_verts, num_tri, vidx;
+	cgm_vec3 v[3], *verts;
+	struct g3d_vertex *varr, v0, v1;
+	float theta, phi;
+
+	num_tri = (sizeof icosa_idx / sizeof *icosa_idx) / 3;
+
+	verts = dynarr_alloc_nf(0, sizeof *verts);
+	for(i=0; i<num_tri; i++) {
+		for(j=0; j<3; j++) {
+			vidx = icosa_idx[i * 3 + j];
+			v[j] = icosa_pt[vidx];
+			cgm_vnormalize(v + j);
+		}
+
+		if(hemi && (v[0].y < 0.0 || v[1].y < 0.0 || v[2].y < 0.0)) {
+			continue;
+		}
+
+		verts = geosphere(verts, v, v + 1, v + 2, subdiv);
+	}
+
+	num_verts = dynarr_size(verts);
+	init_mesh(mesh, G3D_TRIANGLES, num_verts, 0);
+
+	varr = mesh->varr;
+	for(i=0; i<num_verts; i++) {
+		varr->x = verts[i].x * rad;
+		varr->y = verts[i].y * rad;
+		varr->z = verts[i].z * rad;
+		varr->w = 1.0f;
+
+		varr->nx = verts[i].x;
+		varr->ny = verts[i].y;
+		varr->nz = verts[i].z;
+
+		theta = atan2(verts[i].z, verts[i].x);
+		phi = acos(verts[i].y);
+
+		varr->u = 0.5 * theta / M_PI + 0.5;
+		varr->v = phi / M_PI;
+		varr++;
+	}
+
+	dynarr_free(verts);
+
+	indexify_mesh(mesh);
 	return 0;
 }
 
