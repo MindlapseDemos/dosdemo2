@@ -36,6 +36,13 @@ static float cam_dist = 8;
 
 static struct g3d_scene *scn;
 static struct g3d_mesh thing, sph;
+static struct image star;
+
+static const cgm_vec3 ltcol[3] = {
+	{ 1, 0.3, 0.3 },
+	{ 0.3, 0.3, 1 },
+	{ 0.3, 1, 0.3 }
+};
 
 static int wire;
 
@@ -46,6 +53,10 @@ struct screen *temple_screen(void)
 
 static int temple_init(void)
 {
+	if(load_image(&star, "data/psys03.png") == -1) {
+		return -1;
+	}
+
 	if(!(scn = scn_load("data/temple.g3d"))) {
 		return -1;
 	}
@@ -62,6 +73,7 @@ static void destroy(void)
 {
 	scn_free(scn);
 	destroy_mesh(&thing);
+	destroy_image(&star);
 }
 
 static void start(long trans_time)
@@ -82,11 +94,8 @@ static void start(long trans_time)
 
 	g3d_polygon_mode(G3D_GOURAUD);
 
-	g3d_light_color(0, 1, 0.3, 0.3);
-	g3d_light_color(1, 0.3, 0.3, 1);
-	g3d_light_color(2, 0.3, 1, 0.3);
-
 	for(i=0; i<3; i++) {
+		g3d_light_color(i, ltcol[i].x, ltcol[i].y, ltcol[i].z);
 		g3d_light_atten(i, 0.35);
 	}
 
@@ -132,17 +141,17 @@ static void draw(void)
 
 	scn_draw_meshes(scn);
 
-	g3d_translate(0, 1.5, 0);
-
 	g3d_mtl_diffuse(1, 1, 1);
 	g3d_mtl_specular(1, 1, 1);
 	g3d_mtl_shininess(20.0);
 
 	g3d_enable(G3D_SPECULAR);
-	distort_thing(tsec);
+	distort_thing(tsec * 0.7);
 
+	g3d_push_matrix();
+	g3d_translate(0, 1.5, 0);
 	g3d_rotate(tsec * 30.0f, 1, 0, 0);
-	g3d_rotate(tsec * 30.0f, 0, 1, 0);
+	g3d_rotate(tsec * 40.0f, 0, 1, 0);
 
 	if(wire) {
 		g3d_polygon_mode(G3D_WIRE);
@@ -151,8 +160,22 @@ static void draw(void)
 	} else {
 		draw_mesh(&thing);
 	}
-
+	g3d_pop_matrix();
 	g3d_disable(G3D_SPECULAR);
+
+	g3d_polygon_mode(G3D_FLAT);
+	g3d_disable(G3D_LIGHTING);
+	g3d_enable(G3D_TEXTURE_2D | G3D_ADD_BLEND);
+	g3d_set_texture(star.width, star.height, star.pixels);
+	for(i=0; i<3; i++) {
+		unsigned int r = (unsigned int)(ltcol[i].x * 255.0f);
+		unsigned int g = (unsigned int)(ltcol[i].y * 255.0f);
+		unsigned int b = (unsigned int)(ltcol[i].z * 255.0f);
+		draw_billboard(ltpos[i].x, ltpos[i].y, ltpos[i].z, 1.0f, r, g, b, 255);
+	}
+	g3d_disable(G3D_TEXTURE_2D | G3D_ADD_BLEND);
+	g3d_enable(G3D_LIGHTING);
+	g3d_polygon_mode(G3D_GOURAUD);
 
 	swap_buffers(fb_pixels);
 }
