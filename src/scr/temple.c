@@ -28,7 +28,7 @@ static struct screen scr = {
 	draw
 };
 
-static float cam_theta, cam_phi;
+static float cam_theta, cam_phi = 20;
 static float cam_dist = 8;
 
 static struct g3d_scene *scn;
@@ -46,7 +46,7 @@ static int temple_init(void)
 		return -1;
 	}
 
-	if(gen_sphere_mesh(&thing, 0.5, 16, 8) == -1) {
+	if(gen_sphere_mesh(&thing, 0.5, 20, 10) == -1) {
 		fprintf(stderr, "temple_init: mesh generation failed\n");
 		return -1;
 	}
@@ -128,7 +128,14 @@ static void draw(void)
 	scn_draw_meshes(scn);
 
 	g3d_translate(0, 1, 0);
+
+	g3d_mtl_diffuse(1, 1, 1);
+	g3d_mtl_specular(1, 1, 1);
+	g3d_mtl_shininess(20.0);
+
+	g3d_enable(G3D_SPECULAR);
 	draw_mesh(&thing);
+	g3d_disable(G3D_SPECULAR);
 
 	swap_buffers(fb_pixels);
 }

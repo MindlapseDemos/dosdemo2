@@ -37,7 +37,7 @@ typedef float g3d_matrix[16];
 enum {LT_POS, LT_DIR};
 struct light {
 	int type;
-	float x, y, z;
+	float x, y, z, w;
 	float r, g, b;
 	float atten;
 };
@@ -472,6 +472,7 @@ const float *g3d_get_matrix(int which, float *m)
 void g3d_light_pos(int idx, float x, float y, float z)
 {
 	int mvtop = st->mtop[G3D_MODELVIEW];
+	float pos[4];
 
 	st->lt[idx].type = LT_POS;
 	st->lt[idx].x = x;
