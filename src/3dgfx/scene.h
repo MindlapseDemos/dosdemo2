@@ -52,6 +52,8 @@ void scn_destroy(struct g3d_scene *scn);
 struct g3d_scene *scn_create(void);
 void scn_free(struct g3d_scene *scn);
 
+struct g3d_scene *scn_load(const char *fname);
+
 void scn_clear(struct g3d_scene *scn);
 
 void scn_init_node(struct g3d_node *node);
@@ -80,6 +82,10 @@ struct g3d_material *scn_find_mtl(struct g3d_scene *scn, const char *name);
 struct g3d_node *scn_find_node(struct g3d_scene *scn, const char *name);
 struct g3d_anim *scn_find_anim(struct g3d_scene *scn, const char *name);
 
+/* helper using goat3d_load_io to load from assfile */
+int goat3d_load_ass(struct goat3d *g, const char *fname);
+
+/* convert goat3d objects to their g3d equivalent */
 int conv_goat3d_scene(struct g3d_scene *scn, struct goat3d *g);
 int conv_goat3d_mesh(struct g3d_scene *scn, struct g3d_mesh *dstmesh, struct goat3d_mesh *srcmesh);
 int conv_goat3d_mtl(struct g3d_scene *scn, struct g3d_material *destmtl, struct goat3d_material *srcmtl);

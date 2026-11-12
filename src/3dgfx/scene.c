@@ -4,6 +4,7 @@
 #include "util.h"
 #include "goat3d.h"
 #include "cgmath/cgmath.h"
+#include "assfile/assfile.h"
 
 void scn_init(struct g3d_scene *scn)
 {
@@ -74,6 +75,30 @@ void scn_clear(struct g3d_scene *scn)
 		scn_free_anim(scn->anims[i]);
 	}
 	darr_clear(scn->anims);
+}
+
+struct g3d_scene *scn_load(const char *fname)
+{
+	struct g3d_scene *scn;
+	struct goat3d *g;
+
+	if(!(g = goat3d_create())) {
+		fprintf(stderr, "scn_load: failed to create goat3d object\n");
+		return 0;
+	}
+
+	if(goat3d_load_ass(g, fname) == -1) {
+		fprintf(stderr, "scn_load: failed to load scene file: %s\n", fname);
+		goat3d_free(g);
+		return 0;
+	}
+
+	scn = scn_create();
+	scn->texpath = "data";
+
+	conv_goat3d_scene(scn, g);
+	goat3d_free(g);
+	return scn;
 }
 
 void scn_init_node(struct g3d_node *node)
@@ -220,6 +245,31 @@ struct g3d_anim *scn_find_anim(struct g3d_scene *scn, const char *name)
 	return 0;
 }
 
+static long ioread(void *buf, size_t bytes, void *uptr)
+{
+	return ass_fread(buf, 1, bytes, uptr);
+}
+
+static long ioseek(long offs, int whence, void *uptr)
+{
+	return ass_fseek(uptr, offs, whence);
+}
+
+int goat3d_load_ass(struct goat3d *g, const char *fname)
+{
+	int res;
+	ass_file *fp;
+	struct goat3d_io io = {0, ioread, 0, ioseek};
+
+	if(!(fp = ass_fopen(fname, "rb"))) {
+		fprintf(stderr, "goat3d: failed to open: %s\n", fname);
+		return -1;
+	}
+	io.cls = fp;
+	res = goat3d_load_io(g, &io);
+	ass_fclose(fp);
+	return res;
+}
 
 int conv_goat3d_scene(struct g3d_scene *scn, struct goat3d *g)
 {

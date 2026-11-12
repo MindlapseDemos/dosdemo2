@@ -5,3 +5,10 @@ if [ ! -f tools/procdata ]; then
 	echo 'run from the demo root directory' >&2
 	exit 1
 fi
+
+# -- temple
+if [ ! -f data/temple.g3d -o data/src/temple.obj -nt data/temple.g3d -o data/src/temple.mtl -nt data/temple.g3d ]; then
+	if ass2goat data/src/temple.obj; then
+		mv data/src/temple.goat3d data/temple.g3d
+	fi
+fi

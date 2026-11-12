@@ -14,7 +14,7 @@
 		curscr_name_pos = 320 - curscr_name_len * 9; \
 	} while(0)
 
-struct screen *test_screen(void);
+struct screen *temple_screen(void);
 struct screen *raytrace_screen(void);
 
 void start_loadscr(void);
@@ -39,7 +39,7 @@ void populate_screens(void)
 {
 	int idx = 0;
 
-	scr[idx++] = test_screen();
+	scr[idx++] = temple_screen();
 	scr[idx++] = raytrace_screen();
 
 	num_screens = idx;
