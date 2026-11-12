@@ -13,6 +13,20 @@ struct g3d_material {
 	char *name;
 };
 
+struct g3d_mesh_face {
+	uint16_t vidx[4];
+	float nx, ny, nz;
+};
+
+struct g3d_adjinfo {
+	/* array of indices to other vertices which are co-located with this one */
+	int *vsame;
+	int num_vsame;
+	/* array of faces adjacent to this vertex */
+	struct g3d_mesh_face **adjfaces;
+	int num_adj;
+};
+
 struct g3d_mesh {
 	int prim;
 	struct g3d_vertex *varr;
@@ -22,6 +36,10 @@ struct g3d_mesh {
 	unsigned int flags;
 
 	struct g3d_material *mtl;
+
+	struct g3d_mesh_face *faces;
+	int fcount;
+	struct g3d_adjinfo *vadj;
 };
 
 void init_g3dmtl(struct g3d_material *mtl);
@@ -52,6 +70,8 @@ int indexify_mesh(struct g3d_mesh *mesh);
 void normalize_mesh_normals(struct g3d_mesh *mesh);
 
 void calc_mesh_centroid(struct g3d_mesh *mesh, float *cent);
+
+void calc_mesh_normals(struct g3d_mesh *mesh);
 
 int gen_sphere_mesh(struct g3d_mesh *mesh, float rad, int usub, int vsub);
 int gen_plane_mesh(struct g3d_mesh *mesh, float width, float height, int usub, int vsub);

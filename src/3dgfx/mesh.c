@@ -5,6 +5,8 @@
 #include "mesh.h"
 #include "3dgfx.h"
 #include "util.h"
+#include "dynarr.h"
+#include "cgmath/cgmath.h"
 
 void init_g3dmtl(struct g3d_material *mtl)
 {
@@ -335,6 +337,118 @@ void calc_mesh_centroid(struct g3d_mesh *mesh, float *cent)
 	cent[0] *= s;
 	cent[1] *= s;
 	cent[2] *= s;
+}
+
+static int vert_same(struct g3d_vertex *a, struct g3d_vertex *b)
+{
+	float dx = fabs(a->x - b->x);
+	float dy = fabs(a->y - b->y);
+	float dz = fabs(a->z - b->z);
+	float min = dx < dy ? (dx < dz ? dx : dz) : (dy < dz ? dy : dz);
+	return min < 1e-4;
+}
+
+static int find_adjface(struct g3d_mesh *mesh, int vidx, struct g3d_mesh_face *face)
+{
+	int i;
+	struct g3d_adjinfo *vadj = mesh->vadj + vidx;
+
+	for(i=0; i<vadj->num_adj; i++) {
+		if(vadj->adjfaces[i] == face) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void setup_mesh_faces(struct g3d_mesh *mesh)
+{
+	int i, j;
+	struct g3d_adjinfo *vadj;
+	struct g3d_mesh_face *faceptr;
+	uint16_t *idxptr;
+
+	mesh->fcount = mesh->icount / mesh->prim;
+	mesh->faces = malloc_nf(mesh->fcount * sizeof *mesh->faces);
+
+	faceptr = mesh->faces;
+	idxptr = mesh->iarr;
+	for(i=0; i<mesh->fcount; i++) {
+		for(j=0; j<mesh->prim; j++) {
+			faceptr->vidx[j] = *idxptr++;
+		}
+		faceptr++;
+	}
+
+	mesh->vadj = malloc_nf(mesh->vcount * sizeof *mesh->vadj);
+
+	/* mark colocated vertices */
+	vadj = mesh->vadj;
+	for(i=0; i<mesh->vcount; i++) {
+		vadj->vsame = dynarr_alloc_nf(0, sizeof *vadj->vsame);
+		vadj->adjfaces = dynarr_alloc_nf(0, sizeof *vadj->adjfaces);
+
+		for(j=0; j<mesh->vcount; j++) {
+			if(vert_same(mesh->varr + i, mesh->varr + j)) {
+				dynarr_push_nf(vadj->vsame, &j);
+			}
+		}
+
+		vadj->num_vsame = dynarr_size(vadj->vsame);
+		vadj->num_adj = dynarr_size(vadj->adjfaces);
+		vadj++;
+	}
+
+	/* compute vertex adjacency */
+	faceptr = mesh->faces;
+	for(i=0; i<mesh->fcount; i++) {
+		for(j=0; j<mesh->prim; j++) {
+			/* append face to vertex and all its copies, if not done already */
+			if(!find_adjface(mesh, faceptr->vidx[j], mesh->faces + i)) {
+				vadj = mesh->vadj + faceptr->vidx[j];
+				dynarr_push_nf(vadj->adjfaces, mesh->faces + i);
+			}
+		}
+		faceptr++;
+	}
+}
+
+void calc_mesh_normals(struct g3d_mesh *mesh)
+{
+	int i, j;
+	cgm_vec3 vpos[3], ab, ac, n;
+	struct g3d_vertex *vert;
+	struct g3d_adjinfo *vadj;
+	struct g3d_mesh_face *face;
+
+	if(!mesh->faces) {
+		setup_mesh_faces(mesh);
+	}
+
+	for(i=0; i<mesh->fcount; i++) {
+		for(j=0; j<3; j++) {
+			vert = mesh->varr + i * mesh->prim + j;
+			cgm_vcons(vpos + j, vert->x, vert->y, vert->z);
+		}
+
+		ab = cgm_vvsub(vpos[1], vpos[0]);
+		ac = cgm_vvsub(vpos[2], vpos[0]);
+		cgm_vcross(&n, &ab, &ac);
+		cgm_vnormalize(&n);
+	}
+
+	vadj = mesh->vadj;
+	for(i=0; i<mesh->vcount; i++) {
+		cgm_vcons(&n, 0, 0, 0);
+		for(j=0; j<vadj->num_adj; j++) {
+			face = vadj->adjfaces[j];
+			n.x += face->nx;
+			n.y += face->ny;
+			n.z += face->nz;
+		}
+		cgm_vnormalize(&n);
+		vadj++;
+	}
 }
 
 static void sphvec(float *res, float theta, float phi, float rad)

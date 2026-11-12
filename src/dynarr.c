@@ -22,6 +22,9 @@ void *dynarr_alloc(int elem, int szelem)
 {
 	struct arrdesc *desc;
 
+	if(elem < 0 || szelem <= 0) {
+		return 0;
+	}
 	if(!(desc = malloc(elem * szelem + sizeof *desc))) {
 		return 0;
 	}
@@ -29,6 +32,16 @@ void *dynarr_alloc(int elem, int szelem)
 	desc->szelem = szelem;
 	desc->bufsz = elem * szelem;
 	return (char*)desc + sizeof *desc;
+}
+
+void *dynarr_alloc_nf(int elem, int szelem)
+{
+	void *arr = dynarr_alloc(elem, szelem);
+	if(!arr) {
+		fprintf(stderr, "failed to allocate dynamic array (%d * %d bytes)\n", elem, szelem);
+		abort();
+	}
+	return arr;
 }
 
 void dynarr_free(void *da)
@@ -44,10 +57,11 @@ void *dynarr_resize(void *da, int elem)
 	void *tmp;
 	struct arrdesc *desc;
 
-	if(!da) return 0;
+	if(!da || elem < 0) return 0;
 	desc = DESC(da);
 
 	newsz = desc->szelem * elem;
+	if(newsz < 0) return 0;
 
 	if(!(tmp = realloc(desc, newsz + sizeof *desc))) {
 		return 0;
@@ -90,8 +104,7 @@ void *dynarr_push(void *da, void *item)
 		int newsz = desc->max_elem ? desc->max_elem * 2 : 1;
 
 		if(!(tmp = dynarr_resize(da, newsz))) {
-			fprintf(stderr, "failed to resize\n");
-			return da;
+			return 0;
 		}
 		da = tmp;
 		desc = DESC(da);
@@ -121,8 +134,7 @@ void *dynarr_pop(void *da)
 		int newsz = desc->max_elem / 2;
 
 		if(!(tmp = dynarr_resize(da, newsz))) {
-			fprintf(stderr, "failed to resize\n");
-			return da;
+			return 0;
 		}
 		da = tmp;
 		desc = DESC(da);

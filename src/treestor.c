@@ -1,18 +1,63 @@
+/*
+libtreestore - a library for reading/writing hierarchical data as text or binary
+Copyright (C) 2016-2026 John Tsiombikas <nuclear@mutantstargoat.com>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
 #include "treestor.h"
-#include "util.h"
-#include "assfile/assfile.h"
+
+#ifdef WIN32
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 
 struct ts_node *ts_text_load(struct ts_io *io);
 int ts_text_save(struct ts_node *tree, struct ts_io *io);
 
+struct ts_node *ts_bin_load(struct ts_io *io);
+int ts_bin_save(struct ts_node *tree, struct ts_io *io);
+
 static long io_read(void *buf, size_t bytes, void *uptr);
 static long io_write(const void *buf, size_t bytes, void *uptr);
 
+
+static enum ts_save_mode savemode;
+
+void ts_set_save_mode(enum ts_save_mode mode)
+{
+	savemode = mode;
+}
+
+enum ts_save_mode ts_get_save_mode(void)
+{
+	return savemode;
+}
 
 /* ---- ts_value implementation ---- */
 
@@ -106,7 +151,7 @@ fail:
 	{ \
 		static char scrap[128]; \
 		char *str; \
-		int sz = sprintf(scrap, fmt, x); \
+		int sz = snprintf(scrap, sizeof scrap, fmt, x); \
 		if(!(str = malloc(sz + 1))) return 0; \
 		sprintf(str, fmt, x); \
 		return str; \
@@ -123,6 +168,8 @@ struct val_list_node {
 
 int ts_set_value_str(struct ts_value *tsv, const char *str)
 {
+	if(!str) return -1;
+
 	if(tsv->str) {
 		ts_destroy_value(tsv);
 		if(ts_init_value(tsv) == -1) {
@@ -217,6 +264,7 @@ int ts_set_valuei_arr(struct ts_value *tsv, int count, const int *arr)
 
 	if(!(tsv->array = malloc(count * sizeof *tsv->array))) {
 		free(tsv->vec);
+		return -1;
 	}
 	tsv->array_size = count;
 
@@ -292,6 +340,7 @@ int ts_set_valuef_arr(struct ts_value *tsv, int count, const float *arr)
 
 	if(!(tsv->array = malloc(count * sizeof *tsv->array))) {
 		free(tsv->vec);
+		return -1;
 	}
 	tsv->array_size = count;
 
@@ -338,9 +387,11 @@ int ts_set_valuef(struct ts_value *tsv, float fnum)
 	return ts_set_valuef_arr(tsv, 1, &fnum);
 }
 
+int ts_value_array_to_vec(struct ts_value *tsv);
+
 int ts_set_value_arr(struct ts_value *tsv, int count, const struct ts_value *arr)
 {
-	int i, allnum = 1;
+	int i;
 
 	if(count <= 1) return -1;
 
@@ -350,9 +401,6 @@ int ts_set_value_arr(struct ts_value *tsv, int count, const struct ts_value *arr
 	tsv->array_size = count;
 
 	for(i=0; i<count; i++) {
-		if(arr[i].type != TS_NUMBER) {
-			allnum = 0;
-		}
 		if(ts_copy_value(tsv->array + i, (struct ts_value*)arr + i) == -1) {
 			while(--i >= 0) {
 				ts_destroy_value(tsv->array + i);
@@ -363,19 +411,29 @@ int ts_set_value_arr(struct ts_value *tsv, int count, const struct ts_value *arr
 		}
 	}
 
-	if(allnum) {
-		if(!(tsv->vec = malloc(count * sizeof *tsv->vec))) {
-			ts_destroy_value(tsv);
+	tsv->type = TS_ARRAY;
+	ts_value_array_to_vec(tsv);		/* convert to vector if possible (all numbers) */
+	return 0;
+}
+
+int ts_value_array_to_vec(struct ts_value *tsv)
+{
+	int i;
+
+	for(i=0; i<tsv->array_size; i++) {
+		if(tsv->array[i].type != TS_NUMBER) {
 			return -1;
 		}
-		tsv->type = TS_VECTOR;
-		tsv->vec_size = count;
+	}
 
-		for(i=0; i<count; i++) {
-			tsv->vec[i] = tsv->array[i].fnum;
-		}
-	} else {
-		tsv->type = TS_ARRAY;
+	if(!(tsv->vec = malloc(tsv->array_size * sizeof *tsv->vec))) {
+		return -1;
+	}
+	tsv->type = TS_VECTOR;
+	tsv->vec_size = tsv->array_size;
+
+	for(i=0; i<tsv->array_size; i++) {
+		tsv->vec[i] = tsv->array[i].fnum;
 	}
 	return 0;
 }
@@ -659,16 +717,16 @@ struct ts_node *ts_get_child(struct ts_node *node, const char *name)
 
 struct ts_node *ts_load(const char *fname)
 {
-	ass_file *fp;
+	FILE *fp;
 	struct ts_node *root;
 
-	if(!(fp = ass_fopen(fname, "rb"))) {
+	if(!(fp = fopen(fname, "rb"))) {
 		fprintf(stderr, "ts_load: failed to open file: %s: %s\n", fname, strerror(errno));
 		return 0;
 	}
 
 	root = ts_load_file(fp);
-	ass_fclose(fp);
+	fclose(fp);
 	return root;
 }
 
@@ -683,6 +741,10 @@ struct ts_node *ts_load_file(FILE *fp)
 
 struct ts_node *ts_load_io(struct ts_io *io)
 {
+	struct ts_node *n;
+	if((n = ts_bin_load(io))) {
+		return n;
+	}
 	return ts_text_load(io);
 }
 
@@ -711,6 +773,9 @@ int ts_save_file(struct ts_node *tree, FILE *fp)
 
 int ts_save_io(struct ts_node *tree, struct ts_io *io)
 {
+	if(savemode == TS_BIN) {
+		return ts_bin_save(tree, io);
+	}
 	return ts_text_save(tree, io);
 }
 
@@ -792,7 +857,7 @@ struct ts_value *ts_lookup_array(struct ts_node *node, const char *path, struct 
 
 static long io_read(void *buf, size_t bytes, void *uptr)
 {
-	size_t sz = ass_fread(buf, 1, bytes, uptr);
+	size_t sz = fread(buf, 1, bytes, uptr);
 	if(sz < bytes && errno) return -1;
 	return sz;
 }

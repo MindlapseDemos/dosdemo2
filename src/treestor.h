@@ -1,3 +1,29 @@
+/*
+libtreestore - a library for reading/writing hierarchical data as text or binary
+Copyright (C) 2016-2026 John Tsiombikas <nuclear@mutantstargoat.com>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+*/
 #ifndef TREESTORE_H_
 #define TREESTORE_H_
 
@@ -11,6 +37,8 @@ extern "C" {
 #else
 #define TS_DEFVAL(x)
 #endif
+
+enum ts_save_mode { TS_TEXT, TS_BIN };
 
 /** set of user-supplied I/O functions, for ts_load_io/ts_save_io */
 struct ts_io {
@@ -38,6 +66,10 @@ struct ts_value {
 	struct ts_value *array;	/**< elements of the array */
 	int array_size;			/**< size of the array (in elements) */
 };
+
+/* choose to save files as TS_TEXT or TS_BIN */
+void ts_set_save_mode(enum ts_save_mode mode);
+enum ts_save_mode ts_get_save_mode(void);
 
 int ts_init_value(struct ts_value *tsv);
 void ts_destroy_value(struct ts_value *tsv);

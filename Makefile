@@ -11,7 +11,7 @@ srcobj = src/cfgopt.obj src/console.obj src/demo.obj src/dynarr.obj &
 	src/gfxutil.obj src/msurf2.obj src/noise.obj src/rbtree.obj src/screen.obj &
 	src/tinyfps.obj src/treestor.obj src/image.obj src/ts_text.obj &
 	src/util.obj src/darray.obj src/dseq.obj src/font.obj src/curve.obj &
-	src/au_mp3.obj
+	src/au_mp3.obj src/ts_bin.obj
 scrobj = src/scr/temple.obj src/scr/raytrace.obj
 
 incpath = -Isrc -Isrc/dos -Isrc/3dgfx -Isrc/rt -Ilibs -Ilibs/imago/src &
@@ -32,7 +32,7 @@ srcobj = src\cfgopt.obj src\console.obj src\demo.obj src\dynarr.obj &
 	src\gfxutil.obj src\msurf2.obj src\noise.obj src\rbtree.obj src\screen.obj &
 	src\tinyfps.obj src\treestor.obj src\image.obj src\ts_text.obj &
 	src\util.obj src\darray.obj src\dseq.obj src\font.obj src\curve.obj &
-	src\au_mp3.obj
+	src\au_mp3.obj src\ts_bin.obj
 scrobj = src\scr\temple.obj src\scr\raytrace.obj
 
 incpath = -Isrc -Isrc\dos -Isrc\3dgfx -Isrc\rt -Ilibs -Ilibs\imago\src &

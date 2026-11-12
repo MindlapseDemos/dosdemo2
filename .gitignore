@@ -64,6 +64,7 @@ RUN
 .cache
 *.json
 core
+core.*
 *.so*
 *.dll*
 tools/3dview/3dview
