@@ -12,7 +12,7 @@ srcobj = src/cfgopt.obj src/console.obj src/demo.obj src/dynarr.obj &
 	src/tinyfps.obj src/treestor.obj src/image.obj src/ts_text.obj &
 	src/util.obj src/darray.obj src/dseq.obj src/font.obj src/curve.obj &
 	src/au_mp3.obj src/ts_bin.obj
-scrobj = src/scr/temple.obj src/scr/raytrace.obj
+scrobj = src/scr/temple.obj src/scr/raytrace.obj src/scr/samtrans.obj
 
 incpath = -Isrc -Isrc/dos -Isrc/3dgfx -Isrc/rt -Ilibs -Ilibs/imago/src &
 	-Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include -Ilibs/mad
@@ -33,7 +33,7 @@ srcobj = src\cfgopt.obj src\console.obj src\demo.obj src\dynarr.obj &
 	src\tinyfps.obj src\treestor.obj src\image.obj src\ts_text.obj &
 	src\util.obj src\darray.obj src\dseq.obj src\font.obj src\curve.obj &
 	src\au_mp3.obj src\ts_bin.obj
-scrobj = src\scr\temple.obj src\scr\raytrace.obj
+scrobj = src\scr\temple.obj src\scr\raytrace.obj src\scr\samtrans.obj
 
 incpath = -Isrc -Isrc\dos -Isrc\3dgfx -Isrc\rt -Ilibs -Ilibs\imago\src &
 	-Ilibs\anim\src -Ilibs\midas -Ilibs\goat3d\include -Ilibs\mad

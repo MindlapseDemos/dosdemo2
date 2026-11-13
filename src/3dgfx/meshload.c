@@ -426,6 +426,8 @@ static char *parse_idx(char *ptr, int *idx, int arrsz)
  */
 static char *parse_face_vert(char *ptr, struct facevertex *fv, int numv, int numt, int numn)
 {
+	fv->vidx = fv->nidx = fv->tidx = -1;
+
 	if(!(ptr = parse_idx(ptr, &fv->vidx, numv)))
 		return 0;
 	if(*ptr != '/') return (!*ptr || isspace(*ptr)) ? ptr : 0;
@@ -440,8 +442,9 @@ static char *parse_face_vert(char *ptr, struct facevertex *fv, int numv, int num
 		++ptr;
 	}
 
-	if(!(ptr = parse_idx(ptr, &fv->nidx, numn)))
+	if(!(ptr = parse_idx(ptr, &fv->nidx, numn))) {
 		return 0;
+	}
 	return (!*ptr || isspace(*ptr)) ? ptr : 0;
 }
 

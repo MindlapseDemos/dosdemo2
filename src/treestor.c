@@ -31,8 +31,10 @@ OF SUCH DAMAGE.
 #include <assert.h>
 #include "treestor.h"
 
-#ifdef WIN32
+#if defined(WIN32) || defined(MSDOS)
 #include <malloc.h>
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#include <stdlib.h>
 #else
 #include <alloca.h>
 #endif
@@ -151,7 +153,7 @@ fail:
 	{ \
 		static char scrap[128]; \
 		char *str; \
-		int sz = snprintf(scrap, sizeof scrap, fmt, x); \
+		int sz = sprintf(scrap, fmt, x); \
 		if(!(str = malloc(sz + 1))) return 0; \
 		sprintf(str, fmt, x); \
 		return str; \

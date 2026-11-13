@@ -9,7 +9,7 @@
 
 #undef HALFRES
 /* define to see a visualization of the sub-sampling resolution */
-#undef SUBDBG
+#define SUBDBG
 
 struct tile {
 	int x, y;
@@ -22,6 +22,7 @@ static int init(void);
 static void destroy(void);
 static void start(long trans_time);
 static void draw(void);
+static void keypress(int key);
 
 static uint16_t INLINE rend_pixel(int x, int y);
 static void rend_tile(struct tile *tile);
@@ -34,7 +35,8 @@ static struct screen scr = {
 	destroy,
 	start,
 	0,
-	draw
+	draw,
+	keypress
 };
 
 #define TILESZ		16
@@ -50,6 +52,8 @@ static struct rtscene scn;
 static float cam_theta = 10, cam_phi = 10;
 static float cam_dist = 5;
 static float cam_xform[16];
+
+static int subdbg;
 
 static struct rtsphere *subsph;
 static struct rtbox *box;
@@ -335,14 +339,14 @@ static void fillsq(uint16_t *ptr, int sz, uint16_t col)
 	switch(sz) {
 	case 2:
 #ifdef SUBDBG
-		colcol = 0x18ff18ff;
+		if(subdbg) colcol = 0x18ff18ff;
 #endif
 		ptr32[0] = colcol;
 		ptr32[160] = colcol;
 		break;
 	case 4:
 #ifdef SUBDBG
-		colcol = 0x03800380;
+		if(subdbg) colcol = 0x03800380;
 #endif
 		ptr32[0] = ptr32[1] = colcol;
 		ptr32[160] = ptr32[161] = colcol;
@@ -351,7 +355,7 @@ static void fillsq(uint16_t *ptr, int sz, uint16_t col)
 		break;
 	case 8:
 #ifdef SUBDBG
-		colcol = 0xe00fe00f;
+		if(subdbg) colcol = 0xe00fe00f;
 #endif
 		ptr32[0] = ptr32[1] = colcol; ptr32[2] = ptr32[3] = colcol;
 		ptr32[160] = ptr32[161] = colcol; ptr32[162] = ptr32[163] = colcol;
@@ -364,7 +368,7 @@ static void fillsq(uint16_t *ptr, int sz, uint16_t col)
 		break;
 	case 16:
 #ifdef SUBDBG
-		col = 0xff00;
+		if(subdbg) col = 0xff00;
 #endif
 		for(i=0; i<4; i++) {
 			memset16(ptr, col, 16); ptr += 320;
@@ -379,3 +383,14 @@ static void fillsq(uint16_t *ptr, int sz, uint16_t col)
 }
 
 
+static void keypress(int key)
+{
+	switch(key) {
+	case 'd':
+		subdbg ^= 1;
+		break;
+
+	default:
+		break;
+	}
+}
