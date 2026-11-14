@@ -48,6 +48,7 @@ void destroy_mesh(struct g3d_mesh *mesh)
 		free(mesh->name);
 		free(mesh->varr);
 		free(mesh->iarr);
+		free(mesh->vprim);
 	}
 }
 
@@ -351,125 +352,97 @@ static int vert_same(struct g3d_vertex *a, struct g3d_vertex *b)
 	return max < 1e-4;
 }
 
-static int find_adjface(struct g3d_mesh *mesh, int vidx, struct g3d_mesh_face *face)
+static int prepare_vprim(struct g3d_mesh *mesh)
 {
-	int i;
-	struct g3d_adjinfo *vadj = mesh->vadj + vidx;
+	int i, j;
 
-	for(i=0; i<dynarr_size(vadj->adjfaces); i++) {
-		if(vadj->adjfaces[i] == face) {
-			return 1;
+	if(mesh->vprim) return 0;
+
+	if(!(mesh->vprim = malloc(mesh->vcount * sizeof *mesh->vprim))) {
+		fprintf(stderr, "failed to allocate vertex identity table\n");
+		return -1;
+	}
+
+	for(i=0; i<mesh->vcount; i++) {
+		mesh->vprim[i] = i;
+		for(j=0; j<i; j++) {
+			if(vert_same(mesh->varr + i, mesh->varr + j)) {
+				mesh->vprim[i] = j;
+			}
 		}
 	}
 	return 0;
 }
 
-void setup_mesh_faces(struct g3d_mesh *mesh)
-{
-	int i, j, k;
-	struct g3d_adjinfo *vadj;
-	struct g3d_mesh_face *faceptr;
-	uint16_t *idxptr;
-
-	if(!mesh->iarr) return;
-
-	mesh->fcount = mesh->icount / mesh->prim;
-	printf("setup_mesh_faces(%s) for %d faces\n", mesh->name ? mesh->name : "?", mesh->fcount);
-	mesh->faces = malloc_nf(mesh->fcount * sizeof *mesh->faces);
-
-	faceptr = mesh->faces;
-	idxptr = mesh->iarr;
-	for(i=0; i<mesh->fcount; i++) {
-		for(j=0; j<mesh->prim; j++) {
-			faceptr->vidx[j] = *idxptr++;
-		}
-		faceptr++;
-	}
-
-	mesh->vadj = calloc_nf(mesh->vcount, sizeof *mesh->vadj);
-
-	/* mark colocated vertices */
-	vadj = mesh->vadj;
-	for(i=0; i<mesh->vcount; i++) {
-		vadj->vsame = dynarr_alloc_nf(0, sizeof *vadj->vsame);
-		vadj->adjfaces = dynarr_alloc_nf(0, sizeof *vadj->adjfaces);
-
-		for(j=0; j<mesh->vcount; j++) {
-			if(vert_same(mesh->varr + i, mesh->varr + j)) {
-				dynarr_push_nf(vadj->vsame, &j);
-			}
-		}
-
-		vadj->num_vsame = dynarr_size(vadj->vsame);
-		vadj++;
-	}
-
-	/* compute vertex adjacency */
-	faceptr = mesh->faces;
-	for(i=0; i<mesh->fcount; i++) {
-		for(j=0; j<mesh->prim; j++) {
-			/* append face to vertex and all its copies, if not done already */
-			vadj = mesh->vadj + faceptr->vidx[j];
-
-			for(k=0; k<vadj->num_vsame; k++) {
-				int vsame = vadj->vsame[k];
-				if(!find_adjface(mesh, vsame, faceptr)) {
-					struct g3d_adjinfo *adj2 = mesh->vadj + vsame;
-					dynarr_push_nf(adj2->adjfaces, &faceptr);
-				}
-			}
-		}
-		faceptr++;
-	}
-
-	for(i=0; i<mesh->vcount; i++) {
-		mesh->vadj[i].num_adj = dynarr_size(mesh->vadj[i].adjfaces);
-	}
-}
-
 void calc_mesh_normals(struct g3d_mesh *mesh)
 {
-	int i, j;
-	cgm_vec3 vpos[3], ab, ac, n;
-	struct g3d_vertex *vert;
-	struct g3d_adjinfo *vadj;
-	struct g3d_mesh_face *face;
+	int i, j, nfaces;
+	uint16_t *idxptr, vidx;
+	cgm_vec3 ab, ac, n;
+	struct g3d_vertex *va, *vb, *vc, *vert, *vptr;
 
-	if(!mesh->faces) {
-		setup_mesh_faces(mesh);
-	}
-
-	face = mesh->faces;
-	for(i=0; i<mesh->fcount; i++) {
-		for(j=0; j<3; j++) {
-			vert = mesh->varr + face->vidx[j];
-			cgm_vcons(vpos + j, vert->x, vert->y, vert->z);
-		}
-
-		ab = cgm_vvsub(vpos[1], vpos[0]);
-		ac = cgm_vvsub(vpos[2], vpos[0]);
-		cgm_vcross(&n, &ab, &ac);
-		face->nx = n.x;
-		face->ny = n.y;
-		face->nz = n.z;
-		face++;
+	if(!mesh->vprim && prepare_vprim(mesh) == -1) {
+		return;
 	}
 
 	vert = mesh->varr;
-	vadj = mesh->vadj;
 	for(i=0; i<mesh->vcount; i++) {
-		cgm_vcons(&n, 0, 0, 0);
-		for(j=0; j<vadj->num_adj; j++) {
-			face = vadj->adjfaces[j];
-			n.x += face->nx;
-			n.y += face->ny;
-			n.z += face->nz;
+		vert->nx = vert->ny = vert->nz = 0.0f;
+		vert++;
+	}
+
+	if(mesh->iarr) {
+		nfaces = mesh->icount / mesh->prim;
+
+		idxptr = mesh->iarr;
+		for(i=0; i<nfaces; i++) {
+			va = mesh->varr + idxptr[0];
+			vb = mesh->varr + idxptr[1];
+			vc = mesh->varr + idxptr[2];
+
+			cgm_vcons(&ab, vb->x - va->x, vb->y - va->y, vb->z - va->z);
+			cgm_vcons(&ac, vc->x - va->x, vc->y - va->y, vc->z - va->z);
+			cgm_vcross(&n, &ab, &ac);
+
+			for(j=0; j<mesh->prim; j++) {
+				vidx = mesh->vprim[idxptr[j]];
+				vptr = mesh->varr + vidx;
+				vptr->nx += n.x;
+				vptr->ny += n.y;
+				vptr->nz += n.z;
+			}
+			idxptr += mesh->prim;
 		}
-		cgm_vnormalize(&n);
-		vert->nx = n.x;
-		vert->ny = n.y;
-		vert->nz = n.z;
-		vadj++;
+
+	} else {
+		nfaces = mesh->vcount / mesh->prim;
+
+		vert = mesh->varr;
+		for(i=0; i<nfaces; i++) {
+			cgm_vcons(&ab, vert[1].x - vert[0].x, vert[1].y - vert[0].y, vert[1].z - vert[0].z);
+			cgm_vcons(&ac, vert[2].x - vert[0].x, vert[2].y - vert[0].y, vert[2].z - vert[0].z);
+			cgm_vcross(&n, &ab, &ac);
+
+			for(j=0; j<mesh->prim; j++) {
+				vidx = mesh->vprim[vert + j - mesh->varr];
+				vptr = mesh->varr + vidx;
+				vptr->nx += n.x;
+				vptr->ny += n.y;
+				vptr->nz += n.z;
+			}
+			vert += mesh->prim;
+		}
+	}
+
+	vert = mesh->varr;
+	for(i=0; i<mesh->vcount; i++) {
+		if(mesh->vprim[i] != i) {
+			vptr = mesh->varr + mesh->vprim[i];
+			vert->nx = vptr->nx;
+			vert->ny = vptr->ny;
+			vert->nz = vptr->nz;
+		}
+		cgm_vnormalize((cgm_vec3*)&vert->nx);
 		vert++;
 	}
 }

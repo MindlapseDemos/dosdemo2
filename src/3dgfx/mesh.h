@@ -13,20 +13,6 @@ struct g3d_material {
 	char *name;
 };
 
-struct g3d_mesh_face {
-	uint16_t vidx[4];
-	float nx, ny, nz;
-};
-
-struct g3d_adjinfo {
-	/* array of indices to other vertices which are co-located with this one */
-	int *vsame;
-	int num_vsame;
-	/* array of faces adjacent to this vertex */
-	struct g3d_mesh_face **adjfaces;
-	int num_adj;
-};
-
 struct g3d_mesh {
 	int prim;
 	struct g3d_vertex *varr;
@@ -37,9 +23,10 @@ struct g3d_mesh {
 
 	struct g3d_material *mtl;
 
-	struct g3d_mesh_face *faces;
-	int fcount;
-	struct g3d_adjinfo *vadj;
+	/* for each vertex, if >=0, it's the first identical geometrically
+	 * vertex in the vertex array. Used for normal calculation.
+	 */
+	int *vprim;
 };
 
 void init_g3dmtl(struct g3d_material *mtl);
