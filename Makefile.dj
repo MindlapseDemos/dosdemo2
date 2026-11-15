@@ -17,8 +17,9 @@ endif
 
 inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/dos -Ilibs -Ilibs/imago/src \
 	  -Ilibs/anim/src -Ilibs/midas -Ilibs/goat3d/include -Ilibs/mad
-opt = -O3 -ffast-math -fno-strict-aliasing
+opt = -Ofast -ffast-math -fno-math-errno -fno-strict-aliasing -fomit-frame-pointer
 warn = -pedantic -Wall -Wno-unused-function -Wno-unused-variable -Wno-unknown-pragmas
+lto = -flto -ffat-lto-objects -fwhole-program
 
 ifeq ($(BUILD), release)
 	def = -DNDEBUG
@@ -29,8 +30,8 @@ endif
 
 CC = $(TOOLPREFIX)gcc
 AR = $(TOOLPREFIX)ar
-CFLAGS = -march=pentium $(warn) -MMD $(dbg) $(opt) $(prof) $(inc) $(def)
-LDFLAGS = libs/imago/imago.dja libs/anim/anim.dja libs/goat3d/goat3d.dja \
+CFLAGS = -march=pentium2 $(warn) -MMD $(dbg) $(opt) $(lto) $(prof) $(inc) $(def)
+LDFLAGS = $(lto) libs/imago/imago.dja libs/anim/anim.dja libs/goat3d/goat3d.dja \
 		  libs/assfile/assfile.dja libs/midas/libmidas.a libs/mad/libmad.dja
 
 ifneq ($(hostsys), dos)

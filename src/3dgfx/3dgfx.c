@@ -26,13 +26,7 @@ typedef float g3d_matrix[16];
 
 #define IMM_VBUF_SIZE	256
 
-#define NORMALIZE(v) \
-	do { \
-		float s = fast_rsqrt((v)[0] * (v)[0] + (v)[1] * (v)[1] + (v)[2] * (v)[2]); \
-		(v)[0] *= s; \
-		(v)[1] *= s; \
-		(v)[2] *= s; \
-	} while(0)
+#define NORMALIZE(v) fast_normalize(v)
 
 enum {LT_POS, LT_DIR};
 struct light {

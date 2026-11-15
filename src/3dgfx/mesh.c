@@ -317,11 +317,7 @@ void normalize_mesh_normals(struct g3d_mesh *mesh)
 	struct g3d_vertex *v = mesh->varr;
 
 	for(i=0; i<mesh->vcount; i++) {
-		float mag = sqrt(v->nx * v->nx + v->ny * v->ny + v->nz * v->nz);
-		float s = (mag == 0.0f) ? 1.0f : 1.0f / mag;
-		v->nx *= s;
-		v->ny *= s;
-		v->nz *= s;
+		fast_normalize(&v->nx);
 		++v;
 	}
 }
@@ -442,7 +438,8 @@ void calc_mesh_normals(struct g3d_mesh *mesh)
 			vert->ny = vptr->ny;
 			vert->nz = vptr->nz;
 		}
-		cgm_vnormalize((cgm_vec3*)&vert->nx);
+		/*cgm_vnormalize((cgm_vec3*)&vert->nx);*/
+		fast_normalize(&vert->nx);
 		vert++;
 	}
 }
