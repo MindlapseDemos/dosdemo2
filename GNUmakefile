@@ -8,7 +8,7 @@ bin = demo
 
 inc = -Isrc -Isrc/3dgfx -Isrc/rt -Isrc/scr -Isrc/utils \
 	  -Isrc/glut -Ilibs -Ilibs/imago/src -Ilibs/anim/src -Ilibs/miniaud \
-	  -Ilibs/goat3d/include -I/usr/local/include
+	  -Ilibs/goat3d/include -Ilibs/mad -I/usr/local/include
 def = -DMINIGLUT_USE_LIBC -DNO_ASM
 warn = -pedantic -Wall -Wno-unused-variable -Wno-unused-function -Wno-address
 
