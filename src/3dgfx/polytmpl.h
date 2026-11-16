@@ -210,7 +210,12 @@ void POLYFILL(struct pvertex *varr)
 			z += pgrad.dzdx;
 
 			if(cz <= *zptr) {
-				if(pfill_zwrite) *zptr++ = cz;
+#if defined(BLEND_ALPHA) || defined(BLEND_ADD)
+				/* don't write to the zbuffer when blending, just advance */
+				zptr++;
+#else
+				*zptr++ = cz;
+#endif
 			} else {
 				/* ZFAIL: advance all attributes and continue */
 #ifdef GOURAUD

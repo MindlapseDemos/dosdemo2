@@ -77,12 +77,13 @@ static int temple_init(void)
 	/* create particle emitters */
 	ps_init(psys);
 	psys[0].pos_rad = 0.05;
-	psys[0].vel_rad = 0.2;
+	psys[0].vel_rad = 0.1;
 	psys[0].spawn_rate = 20.0f;
-	psys[0].life = 1.0f;
-	psys[0].size0 = 0.025;
-	psys[0].size1 = 0.25;
-	psys[0].grav = -1;
+	psys[0].life = 1.2f;
+	psys[0].size0 = 0.025 * 4;
+	psys[0].size1 = 0.25 * 3;
+	psys[0].grav = -0.5;
+	psys[0].img = &star;
 
 	ps_init_from(psys + 1, psys);
 	ps_init_from(psys + 2, psys);
@@ -220,7 +221,7 @@ static void draw(void)
 		unsigned int r = (unsigned int)(ltcol[i].x * 255.0f);
 		unsigned int g = (unsigned int)(ltcol[i].y * 255.0f);
 		unsigned int b = (unsigned int)(ltcol[i].z * 255.0f);
-		draw_billboard(ltpos[i].x, ltpos[i].y, ltpos[i].z, 1.0f, r, g, b, 255);
+		draw_billboard(ltpos[i].x, ltpos[i].y, ltpos[i].z, 0.8, r, g, b, 255);
 	}
 	g3d_disable(G3D_TEXTURE_2D | G3D_ADD_BLEND);
 	g3d_enable(G3D_LIGHTING);

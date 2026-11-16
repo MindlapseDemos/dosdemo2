@@ -113,7 +113,6 @@ void g3d_reset(void)
 
 #ifdef ENABLE_ZBUFFER
 	free(pfill_zbuf);
-	pfill_zwrite = 1;
 #endif
 	memset(st, 0, sizeof *st);
 
@@ -223,13 +222,6 @@ void g3d_setopt(unsigned int opt, unsigned int mask)
 unsigned int g3d_getopt(unsigned int mask)
 {
 	return st->opt & mask;
-}
-
-void g3d_depth_mask(int zwrite)
-{
-#ifdef ENABLE_ZBUFFER
-	pfill_zwrite = zwrite;
-#endif
 }
 
 void g3d_front_face(unsigned int order)

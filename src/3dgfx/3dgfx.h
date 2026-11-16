@@ -111,8 +111,6 @@ void g3d_disable(unsigned int opt);
 void g3d_setopt(unsigned int opt, unsigned int mask);
 unsigned int g3d_getopt(unsigned int mask);
 
-void g3d_depth_mask(int zwrite);
-
 void g3d_front_face(unsigned int order);
 void g3d_polygon_mode(int pmode);
 int g3d_get_polygon_mode(void);

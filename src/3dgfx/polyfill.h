@@ -49,7 +49,6 @@ struct pimage {
 extern struct pimage pfill_fb;
 extern struct pimage pfill_tex;
 extern uint32_t *pfill_zbuf;
-extern int pfill_zwrite;
 extern struct pgradient pgrad;
 
 void polyfill_fbheight(int height);

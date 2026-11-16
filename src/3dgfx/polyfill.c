@@ -61,7 +61,6 @@ void (*fillfunc[])(struct pvertex*) = {											/* zbbttpp */
 
 struct pimage pfill_fb, pfill_tex;
 uint32_t *pfill_zbuf;
-int pfill_zwrite = 1;
 struct pgradient pgrad;
 
 #define EDGEPAD	8

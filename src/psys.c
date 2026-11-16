@@ -201,7 +201,10 @@ void ps_draw(struct ps_emitter *ps)
 	g3d_disable(G3D_LIGHTING);
 	g3d_enable(G3D_ADD_BLEND);
 	g3d_polygon_mode(G3D_FLAT);
-	g3d_depth_mask(0);
+	if(ps->img) {
+		g3d_enable(G3D_TEXTURE_2D);
+		g3d_set_texture(ps->img->width, ps->img->height, ps->img->pixels);
+	}
 
 	blk = ps->plist;
 	while(blk) {
@@ -219,7 +222,6 @@ next:	blk = blk->next;
 
 	g3d_setopt(sav_en, 0xffffffff);
 	g3d_polygon_mode(sav_pmode);
-	g3d_depth_mask(1);
 }
 
 static INLINE void drawpart(struct ps_emitter *ps, struct ps_part *p)
