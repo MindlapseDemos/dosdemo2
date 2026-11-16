@@ -15,6 +15,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "assfile"=.\LIBS\assfile\assfile.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "dosdemo"=.\dosdemo.dsp - Package Owner=<4>
 
 Package=<5>
@@ -34,6 +46,12 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name mikmod
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name mad
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name miniaud
     End Project Dependency
 }}}
 
@@ -63,7 +81,19 @@ Package=<4>
 
 ###############################################################################
 
-Project: "mikmod"=.\LIBS\mikmod\mikmod.dsp - Package Owner=<4>
+Project: "mad"=.\LIBS\mad\mad.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "miniaud"=.\LIBS\miniaud\miniaud.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -9,9 +9,7 @@
 #include "timer.h"
 #include "cfgopt.h"
 #include "sball.h"
-#include "vmath.h"
 #include "gfxutil.h"
-#include "cpuid.h"
 #include "util.h"
 
 #ifdef __EMSCRIPTEN__
@@ -84,12 +82,6 @@ int main(int argc, char **argv)
 	}
 	SDL_WM_SetCaption("dosdemo2 / mindlapse (SDL)", 0);
 	SDL_ShowCursor(0);
-
-#ifndef NO_ASM
-	if(read_cpuid(&cpuid) == 0) {
-		print_cpuid(&cpuid);
-	}
-#endif
 
 	if(!set_video_mode(match_video_mode(FB_WIDTH, FB_HEIGHT, FB_BPP), 1)) {
 		return 1;

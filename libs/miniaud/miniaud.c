@@ -7407,59 +7407,9 @@ MA_API ma_job ma_job_init(ma_uint16 code)
     return job;
 }
 
-
-static ma_result ma_job_process__noop(ma_job* pJob);
-static ma_result ma_job_process__quit(ma_job* pJob);
-static ma_result ma_job_process__custom(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__load_data_buffer_node(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__free_data_buffer_node(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__page_data_buffer_node(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__load_data_buffer(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__free_data_buffer(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__load_data_stream(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__free_data_stream(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__page_data_stream(ma_job* pJob);
-static ma_result ma_job_process__resource_manager__seek_data_stream(ma_job* pJob);
-
 #if !defined(MA_NO_DEVICE_IO)
 static ma_result ma_job_process__device__aaudio_reroute(ma_job* pJob);
 #endif
-
-static ma_job_proc g_jobVTable[MA_JOB_TYPE_COUNT] =
-{
-    /* Miscellaneous. */
-    ma_job_process__quit,                                       /* MA_JOB_TYPE_QUIT */
-    ma_job_process__custom,                                     /* MA_JOB_TYPE_CUSTOM */
-
-    /* Resource Manager. */
-    ma_job_process__resource_manager__load_data_buffer_node,    /* MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_BUFFER_NODE */
-    ma_job_process__resource_manager__free_data_buffer_node,    /* MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_BUFFER_NODE */
-    ma_job_process__resource_manager__page_data_buffer_node,    /* MA_JOB_TYPE_RESOURCE_MANAGER_PAGE_DATA_BUFFER_NODE */
-    ma_job_process__resource_manager__load_data_buffer,         /* MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_BUFFER */
-    ma_job_process__resource_manager__free_data_buffer,         /* MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_BUFFER */
-    ma_job_process__resource_manager__load_data_stream,         /* MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_STREAM */
-    ma_job_process__resource_manager__free_data_stream,         /* MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_STREAM */
-    ma_job_process__resource_manager__page_data_stream,         /* MA_JOB_TYPE_RESOURCE_MANAGER_PAGE_DATA_STREAM */
-    ma_job_process__resource_manager__seek_data_stream,         /* MA_JOB_TYPE_RESOURCE_MANAGER_SEEK_DATA_STREAM */
-
-    /* Device. */
-#if !defined(MA_NO_DEVICE_IO)
-    ma_job_process__device__aaudio_reroute                      /* MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE */
-#endif
-};
-
-MA_API ma_result ma_job_process(ma_job* pJob)
-{
-    if (pJob == NULL) {
-        return MA_INVALID_ARGS;
-    }
-
-    if (pJob->toc.breakup.code >= MA_JOB_TYPE_COUNT) {
-        return MA_INVALID_OPERATION;
-    }
-
-    return g_jobVTable[pJob->toc.breakup.code](pJob);
-}
 
 static ma_result ma_job_process__noop(ma_job* pJob)
 {

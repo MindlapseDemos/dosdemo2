@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "src" /I "src/3dgfx" /I "src/sdl" /I "libs" /I "libs/imago/src" /I "libs/goat3d/include" /I "libs/anim/src" /I "libs/mikmod/include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "src" /I "src/3dgfx" /I "src/rt" /I "src/sdl" /I "libs" /I "libs/imago/src" /I "libs/goat3d/include" /I "libs/anim/src" /I "libs/mad" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "NO_ASM" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "src" /I "src/3dgfx" /I "src/sdl" /I "libs" /I "libs/imago/src" /I "libs/goat3d/include" /I "libs/anim/src" /I "libs/mikmod/include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "src" /I "src/3dgfx" /I "src/rt" /I "src/sdl" /I "libs" /I "libs/imago/src" /I "libs/goat3d/include" /I "libs/anim/src" /I "libs/mad" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "NO_ASM" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -90,99 +90,15 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\scr\3dzoom.c
+SOURCE=.\Src\Scr\raytrace.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\scr\blobgrid.c
+SOURCE=.\Src\Scr\samtrans.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\scr\bump.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\credits.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\grise.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\hairball.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\hexfloor.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\infcubes.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\juliatun.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\metaball.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\minifx.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\molten.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\opt_3d.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\opt_3d.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\opt_rend.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\opt_rend.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\polka.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\smoketxt.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\smoketxt.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\thunder.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\thunder.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\tunnel.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\voxscape.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\scr\water.c
+SOURCE=.\Src\Scr\temple.c
 # End Source File
 # End Group
 # Begin Group "3dgfx"
@@ -242,7 +158,7 @@ SOURCE=.\src\3dgfx\scene.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\sdl\audio.c
+SOURCE=.\Src\Sdl\audio.c
 # End Source File
 # Begin Source File
 
@@ -261,79 +177,33 @@ SOURCE=.\src\sdl\sball.c
 SOURCE=.\src\sdl\timer.c
 # End Source File
 # End Group
-# Begin Group "cspr"
+# Begin Group "rt"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\cspr\confont.asm
-
-!IF  "$(CFG)" == "dosdemo - Win32 Release"
-
-# Begin Custom Build
-OutDir=.\Release
-InputPath=.\cspr\confont.asm
-
-"$(OutDir)\confont.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\confont.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "dosdemo - Win32 Debug"
-
-# Begin Custom Build
-OutDir=.\Debug
-InputPath=.\cspr\confont.asm
-
-"$(OutDir)\confont.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\confont.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
+SOURCE=.\Src\Rt\rt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\cspr\dbgfont.asm
+SOURCE=.\Src\Rt\rt.h
+# End Source File
+# Begin Source File
 
-!IF  "$(CFG)" == "dosdemo - Win32 Release"
-
-# Begin Custom Build
-OutDir=.\Release
-InputPath=.\cspr\dbgfont.asm
-
-"$(OutDir)\dbgfont.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\dbgfont.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "dosdemo - Win32 Debug"
-
-# Begin Custom Build
-OutDir=.\Debug
-InputPath=.\cspr\dbgfont.asm
-
-"$(OutDir)\dbgfont.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\dbgfont.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
+SOURCE=.\Src\Rt\rtgeom.c
 # End Source File
 # End Group
 # Begin Source File
 
+SOURCE=.\Src\au_mp3.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Src\au_mp3.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\audio.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\bsptree.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\bsptree.h
 # End Source File
 # Begin Source File
 
@@ -353,43 +223,6 @@ SOURCE=.\src\console.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpuid.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpuid.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpuid_s.asm
-
-!IF  "$(CFG)" == "dosdemo - Win32 Release"
-
-# Begin Custom Build
-OutDir=.\Release
-InputPath=.\src\cpuid_s.asm
-
-"$(OutDir)\cpuid_s.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\cpuid_s.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "dosdemo - Win32 Debug"
-
-# Begin Custom Build
-OutDir=.\Debug
-InputPath=.\src\cpuid_s.asm
-
-"$(OutDir)\cpuid_s.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\cpuid_s.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\curve.c
 # End Source File
 # Begin Source File
@@ -403,35 +236,6 @@ SOURCE=.\src\darray.c
 # Begin Source File
 
 SOURCE=.\src\darray.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\data.asm
-
-!IF  "$(CFG)" == "dosdemo - Win32 Release"
-
-# Begin Custom Build
-OutDir=.\Release
-InputPath=.\src\data.asm
-
-"$(OutDir)\data.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\data.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "dosdemo - Win32 Debug"
-
-# Begin Custom Build
-OutDir=.\Debug
-InputPath=.\src\data.asm
-
-"$(OutDir)\data.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\data.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -503,19 +307,19 @@ SOURCE=.\src\noise.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Src\psys.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Src\psys.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\rbtree.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\rbtree.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\rlebmap.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\rlebmap.h
 # End Source File
 # Begin Source File
 
@@ -551,6 +355,10 @@ SOURCE=.\src\treestor.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Src\ts_bin.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ts_text.c
 # End Source File
 # Begin Source File
@@ -560,39 +368,6 @@ SOURCE=.\src\util.c
 # Begin Source File
 
 SOURCE=.\src\util.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\util_s.asm
-
-!IF  "$(CFG)" == "dosdemo - Win32 Release"
-
-# Begin Custom Build
-OutDir=.\Release
-InputPath=.\src\util_s.asm
-
-"$(OutDir)\util_s.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\util_s.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "dosdemo - Win32 Debug"
-
-# Begin Custom Build
-OutDir=.\Debug
-InputPath=.\src\util_s.asm
-
-"$(OutDir)\util_s.obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasm -o $(OutDir)\util_s.obj -f win32 $(InputPath)
-
-# End Custom Build
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vmath.h
 # End Source File
 # End Group
 # End Target
