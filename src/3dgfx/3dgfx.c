@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 #include <assert.h>
 #include "3dgfx.h"
 #include "gfxutil.h"
@@ -25,8 +26,6 @@ typedef float g3d_matrix[16];
 #define MAX_LIGHTS		4
 
 #define IMM_VBUF_SIZE	256
-
-#define NORMALIZE(v) fast_normalize(v)
 
 enum {LT_POS, LT_DIR};
 struct light {
@@ -114,6 +113,7 @@ void g3d_reset(void)
 
 #ifdef ENABLE_ZBUFFER
 	free(pfill_zbuf);
+	pfill_zwrite = 1;
 #endif
 	memset(st, 0, sizeof *st);
 
@@ -223,6 +223,13 @@ void g3d_setopt(unsigned int opt, unsigned int mask)
 unsigned int g3d_getopt(unsigned int mask)
 {
 	return st->opt & mask;
+}
+
+void g3d_depth_mask(int zwrite)
+{
+#ifdef ENABLE_ZBUFFER
+	pfill_zwrite = zwrite;
+#endif
 }
 
 void g3d_front_face(unsigned int order)
@@ -497,7 +504,7 @@ void g3d_light_dir(int idx, float x, float y, float z)
 
 	xform4_vec3(st->norm_mat, &st->lt[idx].x);
 
-	NORMALIZE(&st->lt[idx].x);
+	fast_normalize(&st->lt[idx].x);
 }
 
 void g3d_light_color(int idx, float r, float g, float b)
@@ -1005,6 +1012,11 @@ void g3d_shade(struct g3d_vertex *v)
 			ldir[0] -= v->x;
 			ldir[1] -= v->y;
 			ldir[2] -= v->z;
+
+			if((v->nx * ldir[0] + v->ny * ldir[1] + v->nz * ldir[2]) < 0.0f) {
+				continue;	/* if the light is coming from behind bail out */
+			}
+
 			lensq = ldir[0] * ldir[0] + ldir[1] * ldir[1] + ldir[2] * ldir[2];
 			s = fast_rsqrt(lensq);
 			ldir[0] *= s;
@@ -1013,12 +1025,18 @@ void g3d_shade(struct g3d_vertex *v)
 
 			if(st->lt[i].atten) {
 				atten_invsq = 1.0f / (lensq * st->lt[i].atten);
+				if(atten_invsq < 0.01) {
+					/* light contribution too low */
+					continue;
+				}
 			}
 		}
 
 		if((ndotl = v->nx * ldir[0] + v->ny * ldir[1] + v->nz * ldir[2]) < 0.0f) {
-			ndotl = 0.0f;
-		} else if(atten_invsq != 1.0f) {
+			continue;
+		}
+
+		if(atten_invsq != 1.0f) {
 			ndotl *= atten_invsq;
 		}
 
@@ -1029,7 +1047,7 @@ void g3d_shade(struct g3d_vertex *v)
 		if(st->opt & G3D_SPECULAR) {
 			float ndoth;
 			ldir[2] += 1.0f;
-			NORMALIZE(ldir);
+			fast_normalize(ldir);
 			if((ndoth = v->nx * ldir[0] + v->ny * ldir[1] + v->nz * ldir[2]) < 0.0f) {
 				ndoth = 0.0f;
 			}

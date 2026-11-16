@@ -210,7 +210,7 @@ void POLYFILL(struct pvertex *varr)
 			z += pgrad.dzdx;
 
 			if(cz <= *zptr) {
-				*zptr++ = cz;
+				if(pfill_zwrite) *zptr++ = cz;
 			} else {
 				/* ZFAIL: advance all attributes and continue */
 #ifdef GOURAUD
@@ -242,6 +242,11 @@ void POLYFILL(struct pvertex *varr)
 			r += pgrad.drdx;
 			g += pgrad.dgdx;
 			b += pgrad.dbdx;
+#elif defined(TEXMAP) || defined(BLEND_ALPHA) || defined(BLEND_ADD)
+			/* for flat textured or blended, cr,cg,cb would not be initialized */
+			cr = varr[0].r;
+			cg = varr[0].g;
+			cb = varr[0].b;
 #endif	/* GOURAUD */
 #ifdef TEXMAP
 			tx = (tu >> (16 - pfill_tex.xshift)) & pfill_tex.xmask;
@@ -251,12 +256,6 @@ void POLYFILL(struct pvertex *varr)
 			tu += pgrad.dudx;
 			tv += pgrad.dvdx;
 
-#ifndef GOURAUD
-			/* for flat textured, cr,cg,cb would not be initialized */
-			cr = varr[0].r;
-			cg = varr[0].g;
-			cb = varr[0].b;
-#endif	/* !GOURAUD */
 			/* This is not correct, should be /255, but it's much faster
 			 * to shift by 8 (/256), and won't make a huge difference
 			 */

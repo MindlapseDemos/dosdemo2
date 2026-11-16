@@ -9,6 +9,7 @@
 #include "gfxutil.h"
 #include "util.h"
 #include "mesh.h"
+#include "psys.h"
 #include "imago2.h"
 #include "3dgfx/scene.h"
 
@@ -43,8 +44,12 @@ static const cgm_vec3 ltcol[3] = {
 	{ 0.3, 0.3, 1 },
 	{ 0.3, 1, 0.3 }
 };
+static cgm_vec3 ltpos[3];
+
+static struct ps_emitter psys[3];
 
 static int wire;
+
 
 struct screen *temple_screen(void)
 {
@@ -53,6 +58,8 @@ struct screen *temple_screen(void)
 
 static int temple_init(void)
 {
+	int i;
+
 	if(load_image(&star, "data/psys03.png") == -1) {
 		return -1;
 	}
@@ -66,6 +73,26 @@ static int temple_init(void)
 		return -1;
 	}
 	copy_mesh(&thing, &sph);
+
+	/* create particle emitters */
+	ps_init(psys);
+	psys[0].pos_rad = 0.05;
+	psys[0].vel_rad = 0.2;
+	psys[0].spawn_rate = 20.0f;
+	psys[0].life = 1.0f;
+	psys[0].size0 = 0.025;
+	psys[0].size1 = 0.25;
+	psys[0].grav = -1;
+
+	ps_init_from(psys + 1, psys);
+	ps_init_from(psys + 2, psys);
+
+	for(i=0; i<3; i++) {
+		psys[i].col0.x = psys[i].col1.x = ltcol[i].x;
+		psys[i].col0.y = psys[i].col1.y = ltcol[i].y;
+		psys[i].col0.z = psys[i].col1.z = ltcol[i].z;
+	}
+
 	return 0;
 }
 
@@ -74,6 +101,10 @@ static void destroy(void)
 	scn_free(scn);
 	destroy_mesh(&thing);
 	destroy_image(&star);
+
+	ps_destroy(psys);
+	ps_destroy(psys + 1);
+	ps_destroy(psys + 2);
 }
 
 static void start(long trans_time)
@@ -109,20 +140,38 @@ static void stop(long trans_time)
 	g3d_disable(G3D_LIGHT2);
 }
 
-static void update(void)
+static void update(float tsec)
 {
+	static unsigned long prev_upd;
+	unsigned long interv;
+	float t, dt;
+	int i;
+
+	interv = time_msec - prev_upd;
+	prev_upd = time_msec;
+	dt = interv / 1000.0f;
+
+	distort_thing(tsec * 0.7);
+
+	for(i=0; i<3; i++) {
+		t = tsec + (float)i * (CGM_PI * 2.0f / 3.0f);
+		cgm_vcons(ltpos + i, cos(t) * 3.0f, 1.5, sin(t) * 3.0f);
+
+		psys[i].pos = ltpos[i];
+		ps_update(psys + i, dt);
+	}
+
 	mouse_orbit_update(&cam_theta, &cam_phi, &cam_dist);
 }
 
 static void draw(void)
 {
 	int i;
-	float t, tsec;
-	cgm_vec3 ltpos[3];
+	float tsec;
 
 	tsec = (float)time_msec / 1000.0f;
 
-	update();
+	update(tsec);
 
 	g3d_matrix_mode(G3D_MODELVIEW);
 	g3d_load_identity();
@@ -131,9 +180,6 @@ static void draw(void)
 	g3d_rotate(cam_theta, 0, 1, 0);
 
 	for(i=0; i<3; i++) {
-		t = tsec + (float)i * (CGM_PI * 2.0f / 3.0f);
-		cgm_vcons(ltpos + i, cos(t) * 3.0f, 1.5, sin(t) * 3.0f);
-
 		g3d_light_pos(i, ltpos[i].x, ltpos[i].y, ltpos[i].z);
 	}
 
@@ -146,7 +192,6 @@ static void draw(void)
 	g3d_mtl_shininess(20.0);
 
 	g3d_enable(G3D_SPECULAR);
-	distort_thing(tsec * 0.7);
 
 	g3d_push_matrix();
 	g3d_translate(0, 1.5, 0);
@@ -162,6 +207,10 @@ static void draw(void)
 	}
 	g3d_pop_matrix();
 	g3d_disable(G3D_SPECULAR);
+
+	for(i=0; i<3; i++) {
+		ps_draw(psys + i);
+	}
 
 	g3d_polygon_mode(G3D_FLAT);
 	g3d_disable(G3D_LIGHTING);
