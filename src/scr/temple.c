@@ -13,6 +13,8 @@
 #include "imago2.h"
 #include "3dgfx/scene.h"
 
+#define SKY_ABOVE	PACK_RGB16(4, 3, 21)
+#define SKY_BELOW	PACK_RGB16(19, 13, 40)
 
 static int temple_init(void);
 static void destroy(void);
@@ -34,11 +36,12 @@ static struct screen scr = {
 };
 
 static float cam_theta, cam_phi = 20;
-static float cam_dist = 8;
+static float cam_dist = 6;
 
 static struct g3d_scene *scn;
 static struct g3d_mesh thing, sph;
-static struct image star;
+static struct image star, pano;
+static unsigned int hscroll_mask;
 
 static const cgm_vec3 ltcol[3] = {
 	{ 1, 0.3, 0.3 },
@@ -49,6 +52,7 @@ static cgm_vec3 ltpos[3];
 
 static struct ps_emitter psys[3];
 
+static int show_walls = 1;
 static int wire;
 
 
@@ -60,10 +64,31 @@ struct screen *temple_screen(void)
 static int temple_init(void)
 {
 	int i;
+	struct image tmpimg;
+	uint16_t *sptr, *dptr;
 
 	if(load_image(&star, "data/psys03.png") == -1) {
 		return -1;
 	}
+
+	if(load_image(&tmpimg, "data/pano.jpg") == -1) {
+		return -1;
+	}
+	hscroll_mask = tmpimg.width - 1;
+	if(alloc_image(&pano, tmpimg.width + 320, tmpimg.height, 0) == -1) {
+		return -1;
+	}
+	memset(pano.pixels, pano.scanlen * pano.height * 2, 0xff00);
+
+	sptr = tmpimg.pixels;
+	dptr = pano.pixels;
+	for(i=0; i<pano.height; i++) {
+		memcpy(dptr, sptr, tmpimg.width * 2);
+		memcpy(dptr + tmpimg.width, sptr, 640);
+		dptr += pano.width;
+		sptr += tmpimg.width;
+	}
+	destroy_image(&tmpimg);
 
 	if(!(scn = scn_load("data/temple.g3d"))) {
 		return -1;
@@ -115,7 +140,7 @@ static void start(long trans_time)
 
 	g3d_matrix_mode(G3D_PROJECTION);
 	g3d_load_identity();
-	g3d_perspective(50, 1.333333, 0.5f, 100.0f);
+	g3d_perspective(60, 1.333333, 0.5f, 100.0f);
 
 	g3d_enable(G3D_CULL_FACE);
 	g3d_enable(G3D_DEPTH_TEST);
@@ -132,7 +157,8 @@ static void start(long trans_time)
 		g3d_light_atten(i, 0.35);
 	}
 
-	g3d_clear_color(10, 10, 10);
+	g3d_clear_color(0, 0, 0);
+	g3d_clear(G3D_COLOR_BUFFER_BIT);
 }
 
 static void stop(long trans_time)
@@ -177,7 +203,7 @@ static void draw(void)
 
 	g3d_matrix_mode(G3D_MODELVIEW);
 	g3d_load_identity();
-	g3d_translate(0, -0.5, -cam_dist);
+	g3d_translate(0, -1, -cam_dist);
 	g3d_rotate(cam_phi, 1, 0, 0);
 	g3d_rotate(cam_theta, 0, 1, 0);
 
@@ -185,11 +211,13 @@ static void draw(void)
 		g3d_light_pos(i, ltpos[i].x, ltpos[i].y, ltpos[i].z);
 	}
 
-	g3d_clear(G3D_COLOR_BUFFER_BIT | G3D_DEPTH_BUFFER_BIT);
+	g3d_clear(G3D_DEPTH_BUFFER_BIT);
 
-	skybox();
-
-	scn_draw_meshes(scn);
+	if(show_walls) {
+		scn_draw_meshes(scn);
+	} else {
+		skybox();
+	}
 
 	g3d_mtl_diffuse(1, 1, 1);
 	g3d_mtl_specular(1, 1, 1);
@@ -268,32 +296,57 @@ static void skybox(void)
 	float right_x, right_z, up_y, up_z, d;
 	const float *projmat;
 	const float *viewmat;
-	int i, hscroll, hor_row;
-	uint16_t *fbptr;
+	int i, top, bot, hscroll, hor_row, nrows;
+	uint16_t *fbptr, *sptr;
 
 	viewmat = g3d_get_matrix(G3D_MODELVIEW, 0);
 	up_y = viewmat[5];
-	up_z = viewmat[6];
+	up_z = -viewmat[6];
 	right_x = viewmat[0];
-	right_z = viewmat[2];
+	right_z = -viewmat[2];
 
 	projmat = g3d_get_matrix(G3D_PROJECTION, 0);
 	d = projmat[5];
 
-	hor_row = 120 - cround64(d * 120.0f * up_z / up_y);
+	hor_row = 120 + cround64(d * 120.0f * up_z / up_y - 0.5);
+	hscroll = cround64((atan2(right_z, right_x) + CGM_PI) * 160.0f) & hscroll_mask;
 
-	if(hor_row >= 0 && hor_row < 240) {
-		memset16(fb_pixels + hor_row * 320, 0xffff, 320);
+	top = hor_row - pano.height / 2;
+	bot = top + pano.height;
+
+	if(bot <= 0) {
+		memset16(fb_pixels, SKY_BELOW, 320 * 240);
+		return;
+	}
+	if(top >= 240) {
+		memset16(fb_pixels, SKY_ABOVE, 320 * 240);
+		return;
 	}
 
-	hscroll = 160 + cround64(atan2(right_z, right_x) * 160.0f);
+	if(top < 0) {
+		fbptr = fb_pixels;
+		sptr = pano.pixels + pano.scanlen * -top;
+		top = 0;
+	} else {
+		fbptr = fb_pixels + 320 * top;
+		sptr = pano.pixels;
+	}
+	if(bot > 240) bot = 240;
 
-	if(hscroll >= 0 && hscroll < 320) {
-		fbptr = fb_pixels + hscroll;
-		for(i=0; i<240; i++) {
-			*fbptr = 0xffff;
-			fbptr += 320;
-		}
+	if(top > 0) {
+		memset16(fb_pixels, SKY_ABOVE, top * 320);
+	}
+	if(bot < 240) {
+		memset16(fb_pixels + bot * 320, SKY_BELOW, (240 - bot) * 320);
+	}
+
+	sptr += hscroll;
+
+	i = top;
+	while(i++ < bot) {
+		memcpy(fbptr, sptr, 640);
+		fbptr += 320;
+		sptr += pano.scanlen;
 	}
 }
 
@@ -302,6 +355,10 @@ static void keypress(int key)
 	switch(key) {
 	case 'w':
 		wire ^= 1;
+		break;
+
+	case ' ':
+		show_walls ^= 1;
 		break;
 
 	default:

@@ -38,6 +38,7 @@ void destroy_cubemap(struct image *cube);
 
 /* scanlen == 0 means tightly packed (scanlen = width) */
 void init_image(struct image *img, int x, int y, uint16_t *pixels, int scanlen);
+int alloc_image(struct image *img, int x, int y, int scanlen);
 
 void premul_alpha(struct image *img);
 

@@ -310,6 +310,17 @@ void init_image(struct image *img, int x, int y, uint16_t *pixels, int scanlen)
 	calc_pow2(img);
 }
 
+int alloc_image(struct image *img, int x, int y, int scanlen)
+{
+	init_image(img, x, y, 0, scanlen);
+
+	if(!(img->pixels = calloc(img->scanlen * y * 2, 1))) {
+		fprintf(stderr, "failed to allocate %dx%d image\n", x, y);
+		return -1;
+	}
+	return 0;
+}
+
 void premul_alpha(struct image *img)
 {
 	unsigned int i, pixcount = img->height * img->scanlen;
