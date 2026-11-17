@@ -19,6 +19,7 @@ static void destroy(void);
 static void start(long trans_time);
 static void stop(long trans_time);
 static void draw(void);
+static void skybox(void);
 static void keypress(int key);
 
 static void distort_thing(float tm);
@@ -186,6 +187,8 @@ static void draw(void)
 
 	g3d_clear(G3D_COLOR_BUFFER_BIT | G3D_DEPTH_BUFFER_BIT);
 
+	skybox();
+
 	scn_draw_meshes(scn);
 
 	g3d_mtl_diffuse(1, 1, 1);
@@ -260,6 +263,39 @@ static void distort_thing(float tm)
 	calc_mesh_normals(&thing);
 }
 
+static void skybox(void)
+{
+	float right_x, right_z, up_y, up_z, d;
+	const float *projmat;
+	const float *viewmat;
+	int i, hscroll, hor_row;
+	uint16_t *fbptr;
+
+	viewmat = g3d_get_matrix(G3D_MODELVIEW, 0);
+	up_y = viewmat[5];
+	up_z = viewmat[6];
+	right_x = viewmat[0];
+	right_z = viewmat[2];
+
+	projmat = g3d_get_matrix(G3D_PROJECTION, 0);
+	d = projmat[5];
+
+	hor_row = 120 - cround64(d * 120.0f * up_z / up_y);
+
+	if(hor_row >= 0 && hor_row < 240) {
+		memset16(fb_pixels + hor_row * 320, 0xffff, 320);
+	}
+
+	hscroll = 160 + cround64(atan2(right_z, right_x) * 160.0f);
+
+	if(hscroll >= 0 && hscroll < 320) {
+		fbptr = fb_pixels + hscroll;
+		for(i=0; i<240; i++) {
+			*fbptr = 0xffff;
+			fbptr += 320;
+		}
+	}
+}
 
 static void keypress(int key)
 {
