@@ -39,13 +39,13 @@ Package=<4>
     Project_Dep_Name anim
     End Project Dependency
     Begin Project Dependency
+    Project_Dep_Name assfile
+    End Project Dependency
+    Begin Project Dependency
     Project_Dep_Name goat3d
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name imago
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name mikmod
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name mad
