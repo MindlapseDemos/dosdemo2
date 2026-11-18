@@ -84,12 +84,10 @@ int main(int argc, char **argv)
 			SDL_Quit();
 			return 1;
 		}
-		printf("SDL 32bpp video mode\n");
-		sdlbpp = 32;
-	} else {
-		printf("SDL 16bpp video mode\n");
-		sdlbpp = 16;
 	}
+	sdlbpp = fbsurf->format->BitsPerPixel;
+	printf("SDL %dbpp video mode\n", sdlbpp);
+
 	SDL_WM_SetCaption("dosdemo2 / mindlapse (SDL)", 0);
 	SDL_ShowCursor(0);
 

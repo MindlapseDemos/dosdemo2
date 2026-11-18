@@ -29,7 +29,7 @@ struct options opt = {
 #ifndef MSDOS
 	1,	/* fullscreen */
 #ifndef RETRO_BUILD
-	4,	/* scale */
+	3,	/* scale */
 #else
 	1,
 #endif
@@ -57,7 +57,7 @@ struct options opt = {
 #ifndef MSDOS
 	0,	/* fullscreen */
 #ifndef RETRO_BUILD
-	4,	/* scale */
+	3,	/* scale */
 #else
 	1,
 #endif
