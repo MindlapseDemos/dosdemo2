@@ -5,6 +5,11 @@
 #include "cfgopt.h"
 #include "screen.h"
 
+#if defined(MSDOS) || (defined(_MSC_VER) && _MSC_VER <= 1200)
+/* for DOS builds and MSVC6 builds, assume retro performance */
+#define RETRO_BUILD
+#endif
+
 #ifdef NDEBUG
 /* release build default options */
 struct options opt = {
@@ -14,16 +19,20 @@ struct options opt = {
 	1,	/* music */
 	0,	/* mouse */
 	0,	/* sball */
-#ifndef MSDOS
+#ifndef RETRO_BUILD
 	1,	/* vsync enabled on modern platforms */
 #else
-	0,	/* vsync disabled on DOS (assuming retro performance) */
+	0,	/* vsync disabled on performance-limited platforms */
 #endif
 	0,	/* dbgmode */
 	0,	/* dbgsingle */
 #ifndef MSDOS
 	1,	/* fullscreen */
+#ifndef RETRO_BUILD
 	4,	/* scale */
+#else
+	1,
+#endif
 	0	/* scaler (nearest) */
 #else
 	0	/* sndsetup (midas) */
@@ -38,16 +47,20 @@ struct options opt = {
 	0,	/* music */
 	1,	/* mouse */
 	0,	/* sball */
-#ifndef MSDOS
+#ifndef RETRO_BUILD
 	1,	/* vsync enabled on modern platforms */
 #else
-	0,	/* vsync disabled on DOS (assuming retro performance) */
+	0,	/* vsync disabled on DOS and msvc6 */
 #endif
 	1,	/* dbgmode */
 	0,	/* dbgsingle */
 #ifndef MSDOS
 	0,	/* fullscreen */
+#ifndef RETRO_BUILD
 	4,	/* scale */
+#else
+	1,
+#endif
 	0	/* scaler (nearest) */
 #else
 	0	/* sndsetup (midas) */

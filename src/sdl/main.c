@@ -30,7 +30,7 @@ static int sdlkey_to_demokey(int sdlkey, unsigned int mod);
 static int quit;
 static SDL_Surface *fbsurf;
 
-static int fbscale = -1;
+static int fbscale;
 static int xsz, ysz, sdlbpp;
 static unsigned int sdl_flags = SDL_SWSURFACE;
 
@@ -59,9 +59,19 @@ int main(int argc, char **argv)
 	int s;
 	char *env;
 
+	if(demo_init_cfgopt(argc, argv) == -1) {
+		return 1;
+	}
+
+	if(opt.fullscreen) {
+		sdl_flags |= SDL_FULLSCREEN;
+	}
+
 	if((env = getenv("FBSCALE")) && (s = atoi(env))) {
 		fbscale = s;
 		printf("Framebuffer scaling x%d\n", fbscale);
+	} else {
+		fbscale = opt.scale;
 	}
 
 	xsz = FB_WIDTH * fbscale;
@@ -88,15 +98,11 @@ int main(int argc, char **argv)
 	}
 
 	time_msec = 0;
-	if(demo_init_cfgopt(argc, argv) == -1 || demo_init() == -1) {
+	if(demo_init() == -1) {
 		SDL_Quit();
 		return 1;
 	}
 	vmem = fb_pixels;
-
-	if(fbscale == -1) {	/* if not overriden by env var */
-		fbscale = opt.scale;
-	}
 
 	if(opt.sball && sball_init() == 0) {
 		use_sball = 1;
