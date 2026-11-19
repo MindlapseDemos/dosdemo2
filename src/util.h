@@ -198,6 +198,7 @@ void halt(void);
 #endif
 
 #ifdef _MSC_VER
+#ifndef NO_ASM
 static void __inline memset16(void *dest, uint16_t val, int count)
 {
 	__asm {
@@ -219,7 +220,7 @@ static void __inline memset16(void *dest, uint16_t val, int count)
 	}
 }
 
-#ifdef NO_PENTIUM
+#ifndef NO_PENTIUM
 #define perf_start() \
 	do { \
 		__asm { \
@@ -257,7 +258,8 @@ static unsigned int __inline get_cs(void)
 	}
 	return res;
 }
-#endif
+#endif	/* !defined(NO_ASM) */
+#endif	/* MSVC */
 
 #ifdef NO_ASM
 static void INLINE memset16(void *dest, uint16_t val, int count)
