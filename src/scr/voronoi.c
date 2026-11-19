@@ -44,13 +44,6 @@ struct screen * voronoi_screen(void)
 
 static int voronoi_init(void)
 {
-	int i;
-
-	for (i = 0; i < VORONOI_POINTS; ++i) {
-		points[i].x = rand() & (VORONOI_TEX_W - 1);
-		points[i].y = rand() & (VORONOI_TEX_H - 1);
-	}
-
 	return 0;
 }
 
@@ -71,24 +64,24 @@ static void updateVoronoiPoints()
 	int i;
 
 	float t1 = time_msec * 0.0003f;
-	float t2 = time_msec * 0.0007f;
+	float t2 = time_msec * 0.0005f;
 	float t3 = time_msec * 0.0004f;
-	float t4 = time_msec * 0.0007f;
+	float t4 = time_msec * 0.0002f;
 
-	float dx1 = VORONOI_TEX_W * 0.375f;
-	float dx2 = VORONOI_TEX_W * 0.45f;
-	float dy1 = VORONOI_TEX_H * 0.325f;
-	float dy2 = VORONOI_TEX_H * 0.25f;
+	float dx1 = VORONOI_TEX_W * 0.275f;
+	float dx2 = VORONOI_TEX_W * 0.175f;
+	float dy1 = VORONOI_TEX_H * 0.25f;
+	float dy2 = VORONOI_TEX_H * 0.3f;
 
 	for (i = 0; i < VORONOI_POINTS; ++i) {
-		float it1 = (float)i * 1.77f;
-		float it2 = (float)i * 2.36f;
+		float it1 = (float)(i - 2) * 1.77f;
+		float it2 = (float)(i + 3) * 2.36f;
 
 		int x = VORONOI_TEX_W / 2 + (int)(sin(t1 + it1) * dx1 + sin(t2 + it2) * dx2);
-		int y = VORONOI_TEX_H / 2 + (int)(sin(t3 - it2) * dy1 + sin(t3 + it1) * dy2);
+		int y = VORONOI_TEX_H / 2 + (int)(sin(t3 - it2) * dy1 + sin(t4 + it1) * dy2);
 
-		points[i].x = x & (VORONOI_TEX_W - 1);
-		points[i].y = y & (VORONOI_TEX_H - 1);
+		points[i].x = x;
+		points[i].y = y;
 	}
 }
 
@@ -111,8 +104,8 @@ static void updateVoronoiTexture()
 				//unsigned int dist = (px - x) * (px - x) + (py - y) * (py - y);
 				if (dist < minDist) minDist = dist;
 			}
-			c = minDist >> (7 - 3);
-			if (c > 63) c = 63;
+			c = (minDist >> (7 - 3)) & 127;
+			if (c > 63) c = 127 - c;
 			*dst++ = c;
 		}
 	}
