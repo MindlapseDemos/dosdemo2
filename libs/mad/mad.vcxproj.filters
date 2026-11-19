@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bit.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="decoder.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="fixed.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="frame.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="huffman.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="layer3.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="layer12.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="stream.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="synth.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="version.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bit.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="decoder.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="fixed.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="frame.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="huffman.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="layer3.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="layer12.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="mad.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="stream.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="synth.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D.dat">
+      <Filter>src</Filter>
+    </None>
+    <None Include="imdct_s.dat">
+      <Filter>src</Filter>
+    </None>
+    <None Include="qc_table.dat">
+      <Filter>src</Filter>
+    </None>
+    <None Include="rq_table.dat">
+      <Filter>src</Filter>
+    </None>
+    <None Include="sf_table.dat">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
+</Project>

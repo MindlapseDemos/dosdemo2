@@ -15,7 +15,6 @@
 #include "cfgopt.h"
 #include "cgmath/cgmath.h"
 #include "util.h"
-#include "cpuid.h"
 
 #undef SBALL_CAMERA
 
@@ -127,12 +126,6 @@ int main(int argc, char **argv)
 #ifndef NO_GLTEX
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_CULL_FACE);
-#endif
-
-#ifndef NO_ASM
-	if(read_cpuid(&cpuid) == 0) {
-		print_cpuid(&cpuid);
-	}
 #endif
 
 	if(!set_video_mode(match_video_mode(FB_WIDTH, FB_HEIGHT, FB_BPP), 1)) {
