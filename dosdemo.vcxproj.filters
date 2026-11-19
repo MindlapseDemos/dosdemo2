@@ -130,6 +130,12 @@
     <ClCompile Include="src\scr\temple.c">
       <Filter>src\screens</Filter>
     </ClCompile>
+    <ClCompile Include="src\scr\raymarch.c">
+      <Filter>src\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scr\voronoi.c">
+      <Filter>src\screens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\glut\gfx.h">

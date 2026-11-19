@@ -112,9 +112,11 @@
     <ClCompile Include="src\rt\rtgeom.c" />
     <ClCompile Include="src\screen.c" />
     <ClCompile Include="src\dseq.c" />
+    <ClCompile Include="src\scr\raymarch.c" />
     <ClCompile Include="src\scr\raytrace.c" />
     <ClCompile Include="src\scr\samtrans.c" />
     <ClCompile Include="src\scr\temple.c" />
+    <ClCompile Include="src\scr\voronoi.c" />
     <ClCompile Include="src\tinyfps.c" />
     <ClCompile Include="src\treestor.c" />
     <ClCompile Include="src\ts_bin.c" />

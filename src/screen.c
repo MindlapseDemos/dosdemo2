@@ -17,6 +17,8 @@
 struct screen *temple_screen(void);
 struct screen *raytrace_screen(void);
 struct screen *samtrans_screen(void);
+struct screen *voronoi_screen(void);
+struct screen *raymarch_screen(void);
 
 void start_loadscr(void);
 void end_loadscr(void);
@@ -43,6 +45,8 @@ void populate_screens(void)
 	scr[idx++] = temple_screen();
 	scr[idx++] = raytrace_screen();
 	scr[idx++] = samtrans_screen();
+	scr[idx++] = voronoi_screen();
+	scr[idx++] = raymarch_screen();
 
 	num_screens = idx;
 	assert(num_screens <= NUM_SCR);
