@@ -28,7 +28,7 @@ demopage_shell.html: tools/demotmpl.htm
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 .PHONY: libs
-libs: imago anim assfile mikmod mad goat3d
+libs: imago anim assfile mad goat3d
 
 .PHONY: imago
 imago:
@@ -43,7 +43,7 @@ assfile:
 	$(MAKE) -C libs/assfile -f Makefile.em
 
 .PHONY: mad
-mikmod:
+mad:
 	$(MAKE) -C libs/mad -f Makefile.em
 
 .PHONY: goat3d
