@@ -84,8 +84,8 @@ static void updateVoronoiPoints()
 		float it1 = (float)i * 1.77f;
 		float it2 = (float)i * 2.36f;
 
-		int x = sin(t1 + it1) * dx1 + sin(t2 + it2) * dx2;
-		int y = sin(t3 - it2) * dy1 + sin(t3 + it1) * dy2;
+		int x = VORONOI_TEX_W / 2 + (int)(sin(t1 + it1) * dx1 + sin(t2 + it2) * dx2);
+		int y = VORONOI_TEX_H / 2 + (int)(sin(t3 - it2) * dy1 + sin(t3 + it1) * dy2);
 
 		points[i].x = x & (VORONOI_TEX_W - 1);
 		points[i].y = y & (VORONOI_TEX_H - 1);
@@ -100,15 +100,18 @@ static void updateVoronoiTexture()
 	unsigned char *dst = texture;
 	for (y = 0; y < VORONOI_TEX_H; ++y) {
 		for (x = 0; x < VORONOI_TEX_W; ++x) {
-			unsigned int minDist = 127*127;
+			unsigned int minDist = 127*128;
 			for (i = 0; i < VORONOI_POINTS; ++i) {
 				Point2D* p = &points[i];
-				int px = p->x & (VORONOI_TEX_W - 1);
-				int py = p->y & (VORONOI_TEX_H - 1);
-				unsigned int dist = (px - x) * (px - x) + (py - y) * (py - y);
+				int px = (p->x - x);
+				int py = (p->y - y);
+				unsigned int dist = px * px + py * py;
+				//int px = p->x & (VORONOI_TEX_W - 1);
+				//int py = p->y & (VORONOI_TEX_H - 1);
+				//unsigned int dist = (px - x) * (px - x) + (py - y) * (py - y);
 				if (dist < minDist) minDist = dist;
 			}
-			c = minDist >> (7 - 2);
+			c = minDist >> (7 - 3);
 			if (c > 63) c = 63;
 			*dst++ = c;
 		}
