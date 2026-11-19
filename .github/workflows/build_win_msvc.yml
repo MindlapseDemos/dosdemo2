@@ -1,8 +1,8 @@
 name: Win32 build (MSVC)
 
 on:
-  #push:
-  #pull_request:
+  push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -18,12 +18,6 @@ jobs:
     
     - name: prepare environment
       uses: microsoft/setup-msbuild@v2
-
-    - name: build tools
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        msbuild -m -p:Configuration=Release -t:img2bin .
-        msbuild -m -p:Configuration=Release -t:csprite .
 
     - name: prepare datafiles
       run: |
