@@ -43,7 +43,6 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /I "src" /I "src/3dgfx" /I "src/rt" /I "src/sdl" /I "libs" /I "libs/imago/src" /I "libs/goat3d/include" /I "libs/anim/src" /I "libs/mad" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "NO_ASM" /FR /YX /FD /c
-# SUBTRACT CPP /Z<none>
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -91,6 +90,10 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\scr\raymarch.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\Src\Scr\raytrace.c
 # End Source File
 # Begin Source File
@@ -100,6 +103,10 @@ SOURCE=.\Src\Scr\samtrans.c
 # Begin Source File
 
 SOURCE=.\Src\Scr\temple.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\scr\voronoi.c
 # End Source File
 # End Group
 # Begin Group "3dgfx"
