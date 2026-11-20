@@ -43,6 +43,7 @@ int mouse_x, mouse_y;
 unsigned int mouse_bmask;
 
 struct font demofont;
+struct image mouse_cursor;
 
 /*static struct au_module *mod;*/
 static struct au_stream *mus;
@@ -101,9 +102,6 @@ int demo_init(void)
 	g3d_framebuffer(FB_WIDTH, FB_HEIGHT, fb_pixels, FB_WIDTH);
 
 	if(opt.music) {
-		/*if(!(mod = au_load_module("data/music.xm"))) {
-			return -1;
-		}*/
 		if(!(mus = au_open_stream("data/music.mp3"))) {
 			return -1;
 		}
@@ -112,6 +110,11 @@ int demo_init(void)
 	if(load_font(&demofont, "data/font.gmp", 0xffff) == -1) {
 		return -1;
 	}
+
+	if(load_image(&mouse_cursor, "data/cursor.png") == -1) {
+		return -1;
+	}
+	conv_rle(&mouse_cursor, PACK_RGB16(255, 0, 255));
 
 	if(opt.seqfile) {
 		if(dseq_open(opt.seqfile) == -1) {
@@ -301,9 +304,9 @@ void demo_post_draw(void *pixels)
 		con_draw(pixels);
 	}
 
-	/*if(opt.mouse && time_msec - last_mouse_move < MOUSE_TIMEOUT) {
-		cs_mouseptr(pixels, mouse_x, mouse_y);
-	}*/
+	if(opt.mouse && time_msec - last_mouse_move < MOUSE_TIMEOUT) {
+		blitfb_rle(pixels, mouse_x, mouse_y, &mouse_cursor);
+	}
 }
 
 void change_screen(int idx)
