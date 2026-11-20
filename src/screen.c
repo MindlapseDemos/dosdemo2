@@ -11,7 +11,7 @@
 	do { \
 		curscr_name = curscr->name ? curscr->name : "<unknown>"; \
 		curscr_name_len = strlen(curscr_name); \
-		curscr_name_pos = 320 - curscr_name_len * 9; \
+		curscr_name_pos = 316 - calc_text_len(&demofont, curscr_name); \
 	} while(0)
 
 struct screen *temple_screen(void);

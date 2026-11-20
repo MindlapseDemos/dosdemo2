@@ -109,7 +109,7 @@ int demo_init(void)
 		}
 	}
 
-	if(load_font(&demofont, "data/font.gmp", PACK_RGB16(255, 220, 192)) == -1) {
+	if(load_font(&demofont, "data/font.gmp", 0xffff) == -1) {
 		return -1;
 	}
 
@@ -289,9 +289,9 @@ void demo_post_draw(void *pixels)
 	}
 
 	drawFps(pixels);
-	/*if(curscr_name) {
-		cs_dputs(pixels, curscr_name_pos, 240 - 16, curscr_name);
-	}*/
+	if(curscr_name) {
+		draw_text(&demofont, pixels, curscr_name_pos, 240 - demofont.advance + demofont.baseline, curscr_name);
+	}
 
 	if(show_dseq_dbg) {
 		dseq_dbg_draw();

@@ -194,7 +194,7 @@ static void update(float tsec)
 
 static void draw(void)
 {
-	int i;
+	int i, y;
 	float tsec;
 
 	tsec = (float)time_msec / 1000.0f;

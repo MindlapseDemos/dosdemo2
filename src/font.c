@@ -83,7 +83,11 @@ int load_font(struct font *fnt, const char *fname, uint16_t color)
 			fnt->baseline = val;
 		} else if(sscanf(line, "%d: %dx%d%d%d o:%d,%d adv:%d", &g.cidx, &gwidth,
 					&gheight, &gx, &gy, &g.orgx, &g.orgy, &g.adv) == 8) {
-			mkglyph(&g.img, &img, gx, gy, gwidth, gheight, color);
+			if(gwidth > 0 && gheight > 0) {
+				mkglyph(&g.img, &img, gx, gy, gwidth, gheight, color);
+			} else {
+				memset(&g.img, 0, sizeof g.img);
+			}
 			darr_push(fnt->glyphs, &g);
 
 			if(g.cidx < fnt->gmin) fnt->gmin = g.cidx;
@@ -115,13 +119,17 @@ void draw_text(struct font *fnt, uint16_t *fb, int x, int y, const char *str)
 	int c;
 	struct glyph *g;
 
+	/*y += fnt->advance - fnt->baseline;*/
+
 	while((c = *str++)) {
 		if(c < fnt->gmin || c > fnt->gmax) {
 			if(c == ' ') x += fnt->glyphs['I' - fnt->gmin].adv << 1;
 			continue;
 		}
 		g = fnt->glyphs + c - fnt->gmin;
-		blendfb_rle(fb, x, y - g->orgy, &g->img);
+		if(g->img.pixels) {
+			blendfb_rle(fb, x - g->orgx, y - g->img.height + g->orgy, &g->img);
+		}
 		x += g->adv;
 	}
 }
@@ -132,13 +140,17 @@ void draw_text_img(struct font *fnt, struct image *img, int x, int y, const char
 	int c;
 	struct glyph *g;
 
+	/*y += fnt->advance - fnt->baseline;*/
+
 	while((c = *str++)) {
 		if(c < fnt->gmin || c > fnt->gmax) {
 			if(c == ' ') x += fnt->glyphs['I' - fnt->gmin].adv << 1;
 			continue;
 		}
 		g = fnt->glyphs + c - fnt->gmin;
-		blend_rle(img, x, y, &g->img);
+		if(g->img.pixels) {
+			blend_rle(img, x - g->orgx, y - g->img.height + g->orgy, &g->img);
+		}
 		x += g->adv;
 	}
 }

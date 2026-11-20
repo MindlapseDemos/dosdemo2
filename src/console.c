@@ -50,7 +50,7 @@ void con_stop(void)
 
 void con_draw(uint16_t *fb)
 {
-	int x, y, sidx, cidx;
+	int x, y, sidx, cidx, c;
 
 	/* print output buffer */
 	y = 1;
@@ -58,38 +58,39 @@ void con_draw(uint16_t *fb)
 	while(sidx != sbuf_tail) {
 		con_drawstr(fb, 1, y, sbuf[sidx]);
 		sidx = (sidx + 1) & (SBUF_SIZE - 1);
-		y += 8;
+		y += demofont.advance;
 	}
 
 	memset(fb + y++ * 320, 0xff, 640);
 
-	con_drawglyph(fb, 1, y, '>' - 32);
+	con_drawglyph(fb, 1, y, '>');
 	cidx = rd;
 	x = 10;
 	while(cidx != wr) {
-		con_drawglyph(fb, x, y, cbuf[cidx] - 32);
-		x += 6;
+		c = cbuf[cidx];
+		con_drawglyph(fb, x, y, c);
+		if(c >= demofont.gmin && c <= demofont.gmax) {
+			x += demofont.glyphs[c - demofont.gmin].adv;
+		} else {
+			x += 8;
+		}
 		cidx = (cidx + 1) & CBUF_MASK;
 	}
-	memset(fb + (y + 8) * 320, 0xff, 640);
+	memset(fb + (y + demofont.advance) * 320, 0xff, 640);
 }
 
 void con_drawstr(uint16_t *fb, int x, int y, const char *str)
 {
-	int org_x = x;
-	while(*str) {
-		con_drawglyph(fb, x, y, (int)*str++);
-		x += 6;
-		if(x >= 310) {
-			x = org_x;
-			y += 10;
-		}
-	}
+	y += demofont.advance - demofont.baseline;
+	draw_text_img(&demofont, &fbimg, x, y, str);
 }
 
 void con_drawglyph(uint16_t *fb, int x, int y, int idx)
 {
-	/* TODO */
+	char str[2] = {0};
+
+	str[0] = idx;
+	con_drawstr(fb, x, y, str);
 }
 
 int con_input(int key)
