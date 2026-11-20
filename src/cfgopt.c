@@ -317,7 +317,6 @@ int load_config(const char *fname)
 #endif
 		} else {
 			fprintf(stderr, "%s:%d invalid option: %s\n", fname, nline, line);
-			return -1;
 		}
 	}
 	return 0;
