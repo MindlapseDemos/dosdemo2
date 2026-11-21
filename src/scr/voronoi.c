@@ -31,10 +31,22 @@ typedef struct Point2D
 #define VORONOI_TEX_W 128
 #define VORONOI_TEX_H 128
 
+#define VORONOI_GRID_X 32
+#define VORONOI_GRID_Y 32
+
+#define VORONOI_GRID_W (VORONOI_TEX_W / VORONOI_GRID_X)
+#define VORONOI_GRID_H (VORONOI_TEX_H / VORONOI_GRID_Y)
+
+#define VORONOI_POINTS_W (VORONOI_GRID_W + 2)
+#define VORONOI_POINTS_H (VORONOI_GRID_H + 2)
+
 #define VORONOI_POINTS 16
 
 static Point2D points[VORONOI_POINTS];
 static unsigned char texture[VORONOI_TEX_W * VORONOI_TEX_H];
+
+static Point2D pointsList[VORONOI_POINTS_W * VORONOI_POINTS_H][VORONOI_POINTS];
+static int pointsListCount[VORONOI_POINTS_W * VORONOI_POINTS_H];
 
 
 struct screen * voronoi_screen(void)
@@ -44,6 +56,9 @@ struct screen * voronoi_screen(void)
 
 static int voronoi_init(void)
 {
+	memset(pointsList, 0, VORONOI_POINTS * VORONOI_POINTS_W * VORONOI_POINTS_H * sizeof(Point2D));
+	memset(pointsListCount, 0, VORONOI_POINTS_W * VORONOI_POINTS_H);
+
 	return 0;
 }
 
@@ -73,37 +88,96 @@ static void updateVoronoiPoints()
 	float dy1 = VORONOI_TEX_H * 0.25f;
 	float dy2 = VORONOI_TEX_H * 0.3f;
 
+	memset(pointsListCount, 0, VORONOI_POINTS_W * VORONOI_POINTS_H * sizeof(int));
+
 	for (i = 0; i < VORONOI_POINTS; ++i) {
+		int celX, celY;
+		int celWrapX, celWrapY;
+
 		float it1 = (float)(i - 2) * 1.77f;
 		float it2 = (float)(i + 3) * 2.36f;
 
 		int x = VORONOI_TEX_W / 2 + (int)(sin(t1 + it1) * dx1 + sin(t2 + it2) * dx2);
 		int y = VORONOI_TEX_H / 2 + (int)(sin(t3 - it2) * dy1 + sin(t4 + it1) * dy2);
 
-		points[i].x = x;
-		points[i].y = y;
+		//points[i].x = x;
+		//points[i].y = y;
+
+		celX = x / VORONOI_GRID_X;
+		celY = y / VORONOI_GRID_Y;
+
+		if (celX >= -1 && celX <= VORONOI_GRID_W && celY >= -1 && celY <= VORONOI_GRID_H) {
+			int gridCelOffset = (celY + 1) * VORONOI_POINTS_W + celX + 1;
+			Point2D* pCel = pointsList[gridCelOffset];
+			int count = pointsListCount[gridCelOffset]++;
+			pCel[count].x = x;
+			pCel[count].y = y;
+
+			celWrapX = celX;
+			celWrapY = celY;
+			if (celX == -1) {
+				celWrapX = VORONOI_GRID_W;
+			} else if (celX == VORONOI_GRID_W) {
+				celWrapX = -1;
+			}
+			if (celY == -1) {
+				celWrapY = VORONOI_GRID_H;
+			}
+			else if (celY == VORONOI_GRID_H) {
+				celWrapY = -1;
+			}
+
+			// add duplicate point on other side for later?
+			if (celWrapX != celX || celWrapY != celY) {
+				gridCelOffset = (celWrapY + 1) * VORONOI_POINTS_W + celWrapX + 1;
+				pCel = pointsList[gridCelOffset];
+				count = pointsListCount[gridCelOffset]++;
+				pCel[count].x = x;
+				pCel[count].y = y;
+			}
+		}
 	}
 }
 
+
+//celX = x / VORONOI_GRID_X;
+//celY = y / VORONOI_GRID_Y;
+//if (celX >= -1 && celX <= VORONOI_GRID_W && celY >= -1 && celY <= VORONOI_GRID_H) {
+//	int gridCelOffset = (celY + 1) * VORONOI_POINTS_H + celX + 1;
+//	Point2D* pCel = pointsList[gridCelOffset];
+//	int count = pointsListCount[gridCelOffset]++;
+
 static void updateVoronoiTexture()
 {
-	int x, y, i;
+	int x, y, i, j, k;
 	unsigned int c;
 
 	unsigned char *dst = texture;
 	for (y = 0; y < VORONOI_TEX_H; ++y) {
+		int celY = (y - VORONOI_GRID_Y / 2) / VORONOI_GRID_Y;
+		int gridCelOffsetY = (celY + 1) * VORONOI_POINTS_W;
 		for (x = 0; x < VORONOI_TEX_W; ++x) {
-			unsigned int minDist = 127*128;
-			for (i = 0; i < VORONOI_POINTS; ++i) {
-				Point2D* p = &points[i];
-				int px = (p->x - x);
-				int py = (p->y - y);
-				unsigned int dist = px * px + py * py;
-				//int px = p->x & (VORONOI_TEX_W - 1);
-				//int py = p->y & (VORONOI_TEX_H - 1);
-				//unsigned int dist = (px - x) * (px - x) + (py - y) * (py - y);
-				if (dist < minDist) minDist = dist;
+			int celX = (x - VORONOI_GRID_X / 2) / VORONOI_GRID_X;
+			int gridCelOffset = gridCelOffsetY + celX + 1;
+
+			unsigned int minDist = 127 * 128;
+
+			for (k = 0; k < 2; ++k) {
+				int gridCelQuadrantOffset = gridCelOffset + k * VORONOI_POINTS_W;
+				for (j = 0; j < 2; ++j) {
+					int count = pointsListCount[gridCelQuadrantOffset];
+					Point2D* pCel = pointsList[gridCelQuadrantOffset];
+					for (i = 0; i < count; ++i) {
+						int px = (pCel->x - x);
+						int py = (pCel->y - y);
+						unsigned int dist = px * px + py * py;
+						if (dist < minDist) minDist = dist;
+						pCel++;
+					}
+					gridCelQuadrantOffset++;
+				}
 			}
+
 			c = (minDist >> (7 - 3)) & 127;
 			if (c > 63) c = 127 - c;
 			*dst++ = c;
