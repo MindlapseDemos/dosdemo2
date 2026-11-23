@@ -28,11 +28,11 @@ typedef struct Point2D
 	int x, y;
 } Point2D;
 
-#define VORONOI_TEX_W 128
-#define VORONOI_TEX_H 128
+#define VORONOI_TEX_W 64
+#define VORONOI_TEX_H 64
 
-#define VORONOI_GRID_SIZE_X 32
-#define VORONOI_GRID_SIZE_Y 32
+#define VORONOI_GRID_SIZE_X 16
+#define VORONOI_GRID_SIZE_Y 16
 
 #define VORONOI_GRID_W (VORONOI_TEX_W / VORONOI_GRID_SIZE_X)
 #define VORONOI_GRID_H (VORONOI_TEX_H / VORONOI_GRID_SIZE_Y)
@@ -85,11 +85,12 @@ static void updateVoronoiPoints()
 	float t3 = time_msec * 0.0004f;
 	float t4 = time_msec * 0.0002f;
 
-	float s = 1.25f;
-	float dx1 = VORONOI_TEX_W * 0.275f * s;
-	float dx2 = VORONOI_TEX_W * 0.175f * s;
-	float dy1 = VORONOI_TEX_H * 0.25f * s;
-	float dy2 = VORONOI_TEX_H * 0.3f * s;
+	float sx = 1.25f;
+	float sy = 1.25f;
+	float dx1 = VORONOI_TEX_W * 0.275f * sx;
+	float dx2 = VORONOI_TEX_W * 0.175f * sx;
+	float dy1 = VORONOI_TEX_H * 0.25f * sy;
+	float dy2 = VORONOI_TEX_H * 0.3f * sy;
 
 	memset(pointsListCount, 0, VORONOI_POINTS_W * VORONOI_POINTS_H * sizeof(int));
 
@@ -104,11 +105,11 @@ static void updateVoronoiPoints()
 		int x = VORONOI_TEX_W / 2 + (int)(sin(t1 + it1) * dx1 + sin(t2 + it2) * dx2);
 		int y = VORONOI_TEX_H / 2 + (int)(sin(t3 - it2) * dy1 + sin(t4 + it1) * dy2);
 
-		//points[i].x = x;
-		//points[i].y = y;
-
 		celX = x / VORONOI_GRID_SIZE_X;
 		celY = y / VORONOI_GRID_SIZE_Y;
+
+		if (x < 0) celX--;
+		if (y < 0) celY--;
 
 		if (celX >= -1 && celX <= VORONOI_GRID_W && celY >= -1 && celY <= VORONOI_GRID_H) {
 			int gridCelOffset = (celY + VORONOI_BORDERS/2) * VORONOI_POINTS_W + celX + VORONOI_BORDERS / 2;
@@ -147,28 +148,6 @@ static void updateVoronoiPoints()
 			}
 		}
 	}
-
-	/* {
-		int x, y;
-		for (y = 0; y < VORONOI_POINTS_H; ++y) {
-			for (x = 0; x < VORONOI_POINTS_W; ++x) {
-				printf("%d ", pointsListCount[y * VORONOI_POINTS_W + x]);
-			}
-			printf("\n");
-		}
-
-		for (y = 0; y < VORONOI_POINTS_H; ++y) {
-			for (x = 0; x < VORONOI_POINTS_W; ++x) {
-				int count = pointsListCount[y * VORONOI_POINTS_W + x];
-				for (i=0; i<count; ++i) {
-					printf("%d,%d\t", pointsList[y * VORONOI_POINTS_W + x][i].x, pointsList[y * VORONOI_POINTS_W + x][i].y);
-				}
-				printf("\n");
-			}
-			printf("\n");
-		}
-	}
-	printf("\n");*/
 }
 
 static void updateVoronoiTexture()
@@ -201,12 +180,47 @@ static void updateVoronoiTexture()
 				}
 			}
 
-			c = (minDist >> (7 - 3)) & 127;
+			c = (minDist >> (7 - 4)) & 127;
 			if (c > 63) c = 127 - c;
 			*dst++ = c;
 		}
 	}
 }
+
+/*static void renderVoronoiPoints()
+{
+	int x, y, i;
+
+	int offX = 64;
+	int offY = 64;
+
+	uint16_t* dst = fb_pixels;
+	for (x = offX; x < VORONOI_TEX_W + offX; ++x) {
+		*(dst + offY * FB_WIDTH + x) = 0xffffffff;
+		*(dst + (offY + VORONOI_TEX_H-1) * FB_WIDTH + x) = 0xffffffff;
+	}
+	for (y = offY; y < VORONOI_TEX_H + offY; ++y) {
+		*(dst + y * FB_WIDTH + offX) = 0xffffffff;
+		*(dst + y * FB_WIDTH + offX + VORONOI_TEX_W - 1) = 0xffffffff;
+	}
+
+	for (y = 0; y < VORONOI_POINTS_H; ++y) {
+		for (x = 0; x < VORONOI_POINTS_W; ++x) {
+			int offset = y * VORONOI_POINTS_W + x;
+			int count = pointsListCount[offset];
+			Point2D* pCel = pointsList[offset];
+
+			for (i = 0; i < count; ++i) {
+				int xp = pCel[i].x + offX;
+				int yp = pCel[i].y + offY;
+
+				if (xp >= 0 && xp < FB_WIDTH && yp >= 0 && yp < FB_HEIGHT) {
+					*(dst + yp * FB_WIDTH + xp) = 0xffff0000;
+				}
+			}
+		}
+	}
+}*/
 
 static void renderVoronoiTextureRepeat()
 {
@@ -224,6 +238,27 @@ static void renderVoronoiTextureRepeat()
 			*(dst + x) = (r << 11) | (g << 5) | b;
 		}
 		dst += FB_WIDTH;
+	}
+}
+
+static void renderVoronoiTextureMirror()
+{
+	int x, y;
+
+	unsigned char* src = texture;
+	uint16_t* dst = fb_pixels;
+	for (y = 0; y < VORONOI_TEX_H; ++y) {
+		for (x = 0; x < VORONOI_TEX_W; ++x) {
+			int c = *src++;
+			int r = c >> 1;
+			int g = r;
+			int b = r;
+			uint16_t c16 = (r << 11) | (g << 5) | b;
+			*(dst + y * FB_WIDTH + x) = c16;
+			*(dst + y * FB_WIDTH + 2 * VORONOI_TEX_W - x - 1) = c16;
+			*(dst + (2 * VORONOI_TEX_H - y - 1) * FB_WIDTH + x) = c16;
+			*(dst + (2 * VORONOI_TEX_H - y - 1) * FB_WIDTH + 2 * VORONOI_TEX_W - x - 1) = c16;
+		}
 	}
 }
 
@@ -254,7 +289,9 @@ static void voronoi_draw(void)
 	updateVoronoiTexture();
 
 	//renderVoronoiTexture();
-	renderVoronoiTextureRepeat();
+	//renderVoronoiTextureRepeat();
+	renderVoronoiTextureMirror();
+	//renderVoronoiPoints();
 
 	swap_buffers(fb_pixels);
 }
